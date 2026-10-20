@@ -98,9 +98,12 @@ Returns scoped matches with `{ type, id, title, snippet, updated_at }`.
 | GET | `/api/freya/notifications` | `{ notifications: [...] }` |
 | POST | `/api/freya/notifications/{id}/read` | mark read |
 | GET | `/api/freya/jobs` | `{ jobs: [...] }` |
-| GET | `/api/freya/jobs/{id}` | job status/progress/result/error |
+| GET | `/api/freya/jobs/{id}` | `{ job: {...} }` |
 
-Jobs persist across backend restarts (unlike the legacy in-memory `TaskManager`).
+Notification object: `{ id, title, body, type, read, created_at }`.
+Job object: `{ id, job_id, type, status, progress, message, result, error, created_at, updated_at }`.
+
+Jobs and notifications persist across backend restarts (unlike the legacy in-memory `TaskManager`).
 
 ## 8. Settings (personality / model / voice)
 
@@ -109,11 +112,17 @@ Jobs persist across backend restarts (unlike the legacy in-memory `TaskManager`)
 | GET | `/api/freya/settings` | — | `{ personality, model, voice }` |
 | PUT | `/api/freya/settings` | partial object | update user-scoped settings |
 
+`personality`, `model`, and `voice` are **strings** (e.g. `"composed"`, `"deepseek-chat"`, `"system_tts"`).
+
 ## 9. Persona (read-only, for client display)
 
 | Method | Path | Notes |
 |--------|------|-------|
-| GET | `/api/freya/persona` | Public persona fields (identity, tagline, greeting, voice states) |
+| GET | `/api/freya/persona` | public persona fields |
+
+Response `data` (flat): `{ name, acronym, tagline, role, voice_presentation, greeting, voice }`,
+where `greeting = { title, body_template, time_greetings, time_boundaries_hour, display_policy }`
+and `voice = { provider, default_android, notes, states }`.
 
 ## 10. Per-user isolation on existing MiroFish endpoints
 

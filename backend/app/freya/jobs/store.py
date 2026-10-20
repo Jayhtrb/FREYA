@@ -87,8 +87,9 @@ class JobStore:
 
     def _job_to_dict(self, row) -> Dict[str, Any]:
         return {
+            "id": row["job_id"],
             "job_id": row["job_id"],
-            "kind": row["kind"],
+            "type": row["kind"],
             "status": row["status"],
             "progress": row["progress"],
             "message": row["message"],
@@ -139,10 +140,10 @@ class JobStore:
 
     def _notification_to_dict(self, row) -> Dict[str, Any]:
         return {
-            "notification_id": row["notification_id"],
+            "id": row["notification_id"],
             "title": row["title"],
             "body": row["body"],
-            "kind": row["kind"],
+            "type": row["kind"],
             "read": bool(row["read"]),
             "created_at": row["created_at"],
         }

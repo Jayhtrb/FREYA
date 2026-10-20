@@ -33,12 +33,9 @@ def _defaults() -> Dict[str, Any]:
     persona = get_persona()
     assistant = persona.model_defaults.get("assistant", {})
     return {
-        "personality": persona.personality,
-        "model": {
-            "provider": assistant.get("provider", "deepseek"),
-            "model": assistant.get("model", "deepseek-chat"),
-        },
-        "voice": persona.voice,
+        "personality": "composed",
+        "model": assistant.get("model", "deepseek-chat"),
+        "voice": persona.voice.get("default_android", "system_tts"),
     }
 
 

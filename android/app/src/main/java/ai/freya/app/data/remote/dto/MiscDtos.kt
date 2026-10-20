@@ -106,23 +106,17 @@ data class ToolsListDto(
     val tools: List<ToolDto> = emptyList(),
 )
 
-// ---- Persona (read-only display data) ----
+// ---- Persona (read-only display data; matches backend Persona.public_view()) ----
 
 @Serializable
 data class PersonaDto(
-    val identity: PersonaIdentityDto? = null,
-    val personality: JsonElement? = null,
-    val voice: PersonaVoiceDto? = null,
-)
-
-@Serializable
-data class PersonaIdentityDto(
     val name: String? = null,
     val acronym: String? = null,
     val tagline: String? = null,
     val role: String? = null,
     @SerialName("voice_presentation") val voicePresentation: String? = null,
     val greeting: PersonaGreetingDto? = null,
+    val voice: PersonaVoiceDto? = null,
 )
 
 @Serializable
@@ -130,10 +124,13 @@ data class PersonaGreetingDto(
     val title: String? = null,
     @SerialName("body_template") val bodyTemplate: String? = null,
     @SerialName("time_greetings") val timeGreetings: Map<String, String> = emptyMap(),
+    @SerialName("time_boundaries_hour") val timeBoundariesHour: Map<String, Int> = emptyMap(),
     @SerialName("display_policy") val displayPolicy: String? = null,
 )
 
 @Serializable
 data class PersonaVoiceDto(
+    val provider: String? = null,
+    @SerialName("default_android") val defaultAndroid: String? = null,
     val states: List<String> = emptyList(),
 )
