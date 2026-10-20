@@ -29,6 +29,7 @@ class Task:
     status: TaskStatus
     created_at: datetime
     updated_at: datetime
+    user_id: Optional[str] = None  # FREYA 按用户隔离
     progress: int = 0              # 总进度百分比 0-100
     message: str = ""              # 状态消息
     result: Optional[Dict] = None  # 任务结果
@@ -44,6 +45,7 @@ class Task:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
+            "user_id": self.user_id,
             "progress": self.progress,
             "message": self.message,
             "progress_detail": self.progress_detail,
@@ -72,13 +74,14 @@ class TaskManager:
                     cls._instance._task_lock = threading.Lock()
         return cls._instance
     
-    def create_task(self, task_type: str, metadata: Optional[Dict] = None) -> str:
+    def create_task(self, task_type: str, metadata: Optional[Dict] = None, user_id: Optional[str] = None) -> str:
         """
         创建新任务
         
         Args:
             task_type: 任务类型
             metadata: 额外元数据
+            user_id: 拥有者用户 ID（FREYA 按用户隔离；可选）
             
         Returns:
             任务ID
@@ -92,6 +95,7 @@ class TaskManager:
             status=TaskStatus.PENDING,
             created_at=now,
             updated_at=now,
+            user_id=user_id,
             metadata=metadata or {}
         )
         
@@ -163,12 +167,14 @@ class TaskManager:
             error=error
         )
     
-    def list_tasks(self, task_type: Optional[str] = None) -> list:
-        """列出任务"""
+    def list_tasks(self, task_type: Optional[str] = None, user_id: Optional[str] = None) -> list:
+        """列出任务（可按类型与拥有者过滤）"""
         with self._task_lock:
             tasks = list(self._tasks.values())
             if task_type:
                 tasks = [t for t in tasks if t.task_type == task_type]
+            if user_id is not None:
+                tasks = [t for t in tasks if t.user_id == user_id]
             return [t.to_dict() for t in sorted(tasks, key=lambda x: x.created_at, reverse=True)]
     
     def cleanup_old_tasks(self, max_age_hours: int = 24):

@@ -32,6 +32,9 @@ class Project:
     created_at: str
     updated_at: str
     
+    # FREYA 按用户隔离：拥有者用户 ID（旧数据为 None，视为未归属）
+    user_id: Optional[str] = None
+    
     # 文件信息
     files: List[Dict[str, str]] = field(default_factory=list)  # [{filename, path, size}]
     total_text_length: int = 0
@@ -62,6 +65,7 @@ class Project:
             "status": self.status.value if isinstance(self.status, ProjectStatus) else self.status,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "user_id": self.user_id,
             "files": self.files,
             "total_text_length": self.total_text_length,
             "ontology": self.ontology,
@@ -89,6 +93,7 @@ class Project:
             status=status,
             created_at=data.get('created_at', ''),
             updated_at=data.get('updated_at', ''),
+            user_id=data.get('user_id'),
             files=data.get('files', []),
             total_text_length=data.get('total_text_length', 0),
             ontology=data.get('ontology'),
@@ -136,12 +141,13 @@ class ProjectManager:
         return os.path.join(cls._get_project_dir(project_id), 'extracted_text.txt')
     
     @classmethod
-    def create_project(cls, name: str = "Unnamed Project") -> Project:
+    def create_project(cls, name: str = "Unnamed Project", user_id: Optional[str] = None) -> Project:
         """
         创建新项目
         
         Args:
             name: 项目名称
+            user_id: 拥有者用户 ID（FREYA 按用户隔离；可选，旧调用不传）
             
         Returns:
             新创建的Project对象
@@ -156,7 +162,8 @@ class ProjectManager:
             name=name,
             status=ProjectStatus.CREATED,
             created_at=now,
-            updated_at=now
+            updated_at=now,
+            user_id=user_id
         )
         
         # 创建项目目录结构
@@ -180,15 +187,16 @@ class ProjectManager:
             json.dump(project.to_dict(), f, ensure_ascii=False, indent=2)
     
     @classmethod
-    def get_project(cls, project_id: str) -> Optional[Project]:
+    def get_project(cls, project_id: str, user_id: Optional[str] = None) -> Optional[Project]:
         """
         获取项目
         
         Args:
             project_id: 项目ID
+            user_id: 可选拥有者校验；提供时，项目不属于该用户则返回 None（用于 404 隔离）
             
         Returns:
-            Project对象，如果不存在返回None
+            Project对象，如果不存在或不属于该用户返回None
         """
         meta_path = cls._get_project_meta_path(project_id)
         
@@ -198,15 +206,20 @@ class ProjectManager:
         with open(meta_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        return Project.from_dict(data)
+        project = Project.from_dict(data)
+        if user_id is not None and project.user_id is not None and project.user_id != user_id:
+            return None
+        
+        return project
     
     @classmethod
-    def list_projects(cls, limit: Optional[int] = 50) -> List[Project]:
+    def list_projects(cls, limit: Optional[int] = 50, user_id: Optional[str] = None) -> List[Project]:
         """
         列出所有项目
         
         Args:
             limit: 返回数量限制
+            user_id: 可选拥有者过滤；提供时仅返回该用户的项目
             
         Returns:
             项目列表，按创建时间倒序
@@ -217,6 +230,8 @@ class ProjectManager:
         for project_id in os.listdir(cls.PROJECTS_DIR):
             project = cls.get_project(project_id)
             if project:
+                if user_id is not None and project.user_id is not None and project.user_id != user_id:
+                    continue
                 projects.append(project)
         
         # 按创建时间倒序排序

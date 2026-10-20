@@ -24,6 +24,32 @@ class Config:
     # JSON配置 - 禁用ASCII转义，让中文直接显示
     JSON_AS_ASCII = False
     
+    # ============ FREYA 编排层配置 ============
+    # 助手推理模型（DeepSeek，OpenAI 兼容格式）
+    DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+    DEEPSEEK_BASE_URL = os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1')
+    DEEPSEEK_MODEL = os.environ.get('DEEPSEEK_MODEL', 'deepseek-chat')
+    
+    # JWT 认证
+    FREYA_JWT_SECRET = os.environ.get('FREYA_JWT_SECRET') or os.environ.get(
+        'SECRET_KEY', 'mirofish-secret-key'
+    )
+    FREYA_JWT_TTL_SECONDS = int(os.environ.get('FREYA_JWT_TTL_SECONDS', '604800'))
+    
+    # FREYA SQLite 数据库（认证/会话/记忆/任务/通知）
+    FREYA_DB_PATH = os.environ.get(
+        'FREYA_DB_PATH',
+        os.path.join(os.path.dirname(__file__), '../data/freya.sqlite3'),
+    )
+    
+    # 每用户聊天速率限制（每分钟）
+    FREYA_RATE_LIMIT_PER_MINUTE = int(os.environ.get('FREYA_RATE_LIMIT_PER_MINUTE', '20'))
+    
+    # 现有引擎接口是否强制 JWT（§10）。
+    # 默认关闭以保持与既有 MiroFish 引擎测试/前端的向后兼容；
+    # 生产环境应设置为 "true" 启用按用户隔离。
+    FREYA_REQUIRE_AUTH = os.environ.get('FREYA_REQUIRE_AUTH', 'false').lower() == 'true'
+    
     # LLM配置（统一使用OpenAI格式）
     LLM_API_KEY = os.environ.get('LLM_API_KEY')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')

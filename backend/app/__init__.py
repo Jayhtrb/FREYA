@@ -68,6 +68,12 @@ def create_app(config_class=Config):
     app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
     app.register_blueprint(report_bp, url_prefix='/api/report')
     
+    # 注册 FREYA 编排层蓝图（/api/freya/*），并初始化其 SQLite 数据库
+    from .freya import db as freya_db
+    from .freya.api import register_freya_blueprints
+    freya_db.init_db()
+    register_freya_blueprints(app)
+    
     # 健康检查
     @app.route('/health')
     def health():

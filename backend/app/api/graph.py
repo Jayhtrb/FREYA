@@ -26,6 +26,7 @@ from ..services.simulation_manager import SimulationManager
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..services.zep_graph_memory_updater import ZepGraphMemoryManager
 from ..utils.llm_client import LLMResponseError
+from ..freya.auth.decorators import current_user_id
 
 # 获取日志器
 logger = get_logger('mirofish.api')
@@ -317,7 +318,7 @@ def generate_ontology():
             }), 400
         
         # 创建项目
-        project = ProjectManager.create_project(name=project_name)
+        project = ProjectManager.create_project(name=project_name, user_id=current_user_id())
         project.simulation_requirement = simulation_requirement
         logger.info(f"创建项目: {project.project_id}")
         
