@@ -50,14 +50,7 @@ import androidx.navigation.navArgument
 fun FreyaApp() {
     val app = LocalContext.current.applicationContext as FreyaApplication
     val isAuthed by app.container.authRepository.isAuthenticated()
-        .collectAsStateWithLifecycle()
-
-    if (isAuthed == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-        }
-        return
-    }
+        .collectAsStateWithLifecycle(initialValue = false)
 
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()

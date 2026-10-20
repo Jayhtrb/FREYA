@@ -7,6 +7,7 @@ import ai.freya.app.data.remote.FreyaJson
 import ai.freya.app.data.remote.dto.SearchHitDto
 import ai.freya.app.data.remote.dto.SearchResultWrapperDto
 import ai.freya.app.domain.model.SearchHit
+import kotlinx.serialization.json.decodeFromJsonElement
 
 class SearchRepository(private val api: FreyaApi) {
 

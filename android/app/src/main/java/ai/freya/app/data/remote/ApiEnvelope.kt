@@ -3,6 +3,7 @@ package ai.freya.app.data.remote
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -66,7 +67,7 @@ fun ApiEnvelope.requireSuccess() {
 inline fun <reified T> ApiEnvelope.requireData(): T {
     requireSuccess()
     val payload = data ?: throw FreyaException("Missing response data")
-    return FreyaJson.json.decodeFromJsonElement(payload)
+    return FreyaJson.json.decodeFromJsonElement<T>(payload)
 }
 
 /** Best-effort decode of the envelope `data` payload as [T] (null when absent). */

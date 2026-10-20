@@ -108,7 +108,7 @@ fun SettingsScreen(
     onOpenMemory: () -> Unit,
 ) {
     val vm: SettingsViewModel = viewModel()
-    val user by vm.storedUser.collectAsStateWithLifecycle()
+    val user by vm.storedUser.collectAsStateWithLifecycle(initialValue = null)
     val personality by vm.dataStore.personality.collectAsStateWithLifecycle(initialValue = "composed")
     val model by vm.dataStore.model.collectAsStateWithLifecycle(initialValue = "deepseek-chat")
     val voice by vm.dataStore.voice.collectAsStateWithLifecycle(initialValue = "system_tts")
