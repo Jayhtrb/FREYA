@@ -7,6 +7,7 @@ import ai.freya.app.ui.screens.auth.RegisterScreen
 import ai.freya.app.ui.screens.home.HomeScreen
 import ai.freya.app.ui.screens.interview.InterviewScreen
 import ai.freya.app.ui.screens.jobs.JobsScreen
+import ai.freya.app.ui.screens.power.PowerScreen
 import ai.freya.app.ui.screens.projects.ProjectsScreen
 import ai.freya.app.ui.screens.report.ReportScreen
 import ai.freya.app.ui.screens.search.SearchScreen
@@ -107,10 +108,16 @@ fun FreyaApp() {
             composable(Routes.SEARCH) { SearchScreen() }
             composable(Routes.JOBS) { JobsScreen() }
             composable(Routes.SETTINGS) {
-                SettingsScreen(onOpenMemory = { navController.navigate(Routes.MEMORY) })
+                SettingsScreen(
+                    onOpenMemory = { navController.navigate(Routes.MEMORY) },
+                    onOpenPower = { navController.navigate(Routes.POWER) },
+                )
             }
             composable(Routes.MEMORY) {
                 MemoryScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.POWER) {
+                PowerScreen(onBack = { navController.popBackStack() })
             }
             composable(
                 route = Routes.SIMULATION,

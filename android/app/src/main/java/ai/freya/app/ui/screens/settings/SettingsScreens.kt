@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -106,6 +107,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 @Composable
 fun SettingsScreen(
     onOpenMemory: () -> Unit,
+    onOpenPower: () -> Unit,
 ) {
     val vm: SettingsViewModel = viewModel()
     val user by vm.storedUser.collectAsStateWithLifecycle(initialValue = null)
@@ -197,6 +199,13 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(if (saving) "Saving…" else "Save settings")
+            }
+
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = onOpenPower, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Bolt, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Power / API keys")
             }
 
             Spacer(Modifier.height(8.dp))

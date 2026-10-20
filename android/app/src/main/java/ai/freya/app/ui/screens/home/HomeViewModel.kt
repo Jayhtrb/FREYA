@@ -21,6 +21,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     private val container = (app as FreyaApplication).container
     private val chatRepo = container.chatRepository
+    private val keysRepo = container.keysRepository
     val voiceController = container.voiceController
 
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
@@ -31,6 +32,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _coreOnline = MutableStateFlow(false)
+    val coreOnline: StateFlow<Boolean> = _coreOnline.asStateFlow()
 
     private val _conversationId = MutableStateFlow<String?>(null)
     val conversationId: StateFlow<String?> = _conversationId.asStateFlow()
@@ -53,6 +57,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             voiceController.transcript.collect { text ->
                 if (text.isNotBlank()) send(text)
             }
+        }
+        viewModelScope.launch {
+            runCatching { keysRepo.status() }.getOrNull()?.let { _coreOnline.value = it.anySet }
         }
     }
 

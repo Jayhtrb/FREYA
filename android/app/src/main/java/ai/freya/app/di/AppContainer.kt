@@ -8,6 +8,7 @@ import ai.freya.app.data.remote.FreyaApi
 import ai.freya.app.data.remote.NetworkModule
 import ai.freya.app.data.repository.AuthRepository
 import ai.freya.app.data.repository.ChatRepository
+import ai.freya.app.data.repository.KeysRepository
 import ai.freya.app.data.repository.MemoryRepository
 import ai.freya.app.data.repository.ProjectsRepository
 import ai.freya.app.data.repository.ReportRepository
@@ -54,6 +55,7 @@ class AppContainer(context: Context) {
     val searchRepository = SearchRepository(api)
     val memoryRepository = MemoryRepository(api)
     val settingsRepository = SettingsRepository(api)
+    val keysRepository = KeysRepository(api)
 
     // ---- Voice (system STT/TTS; they self-report availability and degrade to text-only) ----
     val sttProvider: SpeechToTextProvider = AndroidSpeechRecognizerProvider(appContext)

@@ -10,6 +10,7 @@ object Routes {
     const val JOBS = "jobs"
     const val SETTINGS = "settings"
     const val MEMORY = "memory"
+    const val POWER = "power"
 
     const val SIMULATION = "simulation/{projectId}"
     const val REPORT = "report/{simulationId}"

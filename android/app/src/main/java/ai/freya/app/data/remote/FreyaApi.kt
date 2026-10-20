@@ -8,6 +8,7 @@ import ai.freya.app.data.remote.dto.InterviewAllRequest
 import ai.freya.app.data.remote.dto.InterviewBatchRequest
 import ai.freya.app.data.remote.dto.InterviewHistoryRequest
 import ai.freya.app.data.remote.dto.InterviewRequest
+import ai.freya.app.data.remote.dto.KeysUpdateRequest
 import ai.freya.app.data.remote.dto.LoginRequest
 import ai.freya.app.data.remote.dto.PreferenceUpsertRequest
 import ai.freya.app.data.remote.dto.PrepareSimulationRequest
@@ -109,6 +110,16 @@ interface FreyaApi {
     // ---- Persona ----
     @GET("api/freya/persona")
     suspend fun persona(): ApiEnvelope
+
+    // ---- API keys (BYOK) ----
+    @GET("api/freya/keys")
+    suspend fun keysStatus(): ApiEnvelope
+
+    @PUT("api/freya/keys")
+    suspend fun updateKeys(@Body body: KeysUpdateRequest): ApiEnvelope
+
+    @DELETE("api/freya/keys")
+    suspend fun clearKeys(): ApiEnvelope
 
     // ---- Projects (MiroFish /api/graph) ----
     @Multipart
