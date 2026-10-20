@@ -36,7 +36,7 @@ class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
         val onFinalResult: (String) -> Unit = onResult
         val onFailure: (String) -> Unit = onError
 
-        speechRecognizer.setRecognitionListener(object : RecognitionListener() {
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) = Unit
             override fun onBeginningOfSpeech() = Unit
             override fun onRmsChanged(rmsdB: Float) = Unit

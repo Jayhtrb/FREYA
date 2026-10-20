@@ -56,5 +56,7 @@ backend/logs/
 # 上传文件
 backend/uploads/
 
-# Docker 数据
-data/
+# Docker 数据（仅根目录；锚定后不再误伤各包内同名 data/ 目录）
+/data/
+# FREYA SQLite（backend 运行时生成）
+backend/data/
