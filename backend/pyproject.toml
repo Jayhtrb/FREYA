@@ -36,6 +36,7 @@ dependencies = [
     
     # FREYA 编排层（认证/会话/记忆/任务）
     "PyJWT>=2.8.0",
+    "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]

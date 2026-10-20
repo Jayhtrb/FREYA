@@ -430,6 +430,10 @@ class ZepToolsService:
     def __init__(self, api_key: Optional[str] = None, llm_client: Optional[LLMClient] = None):
         self.api_key = api_key or Config.ZEP_API_KEY
         if not self.api_key:
+            from ..freya.keys.inject import effective_zep
+
+            self.api_key = effective_zep()
+        if not self.api_key:
             raise ValueError("ZEP_API_KEY 未配置")
         
         self.client = get_zep_client(self.api_key)

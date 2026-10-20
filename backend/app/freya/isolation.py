@@ -40,6 +40,9 @@ def engine_jwt_gate():
             401,
         )
     g.freya_user_id = user_id
+    from .keys.store import get_keys
+
+    g.freya_keys = get_keys(user_id)
     return None
 
 

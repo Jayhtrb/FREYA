@@ -11,9 +11,9 @@ from .openai_compat import OpenAICompatAdapter
 class DeepSeekAdapter(OpenAICompatAdapter):
     """DeepSeek 推理模型适配器。"""
 
-    def __init__(self):
+    def __init__(self, api_key=None, base_url=None, model=None):
         super().__init__(
-            api_key=Config.DEEPSEEK_API_KEY,
-            base_url=Config.DEEPSEEK_BASE_URL,
-            model=Config.DEEPSEEK_MODEL,
+            api_key=api_key or Config.DEEPSEEK_API_KEY,
+            base_url=base_url or Config.DEEPSEEK_BASE_URL,
+            model=model or Config.DEEPSEEK_MODEL,
         )

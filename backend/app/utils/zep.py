@@ -73,6 +73,11 @@ def get_zep_client(api_key: str | None = None, timeout: float | None = None) -> 
 
     normalized_key = (api_key or Config.ZEP_API_KEY or "").strip()
     if not normalized_key:
+        # BYOK：请求级用户密钥优先（无请求上下文或未设置时保持原行为）。
+        from ..freya.keys.inject import effective_zep
+
+        normalized_key = (effective_zep() or "").strip()
+    if not normalized_key:
         raise ValueError("ZEP_API_KEY 未配置")
 
     request_timeout = float(

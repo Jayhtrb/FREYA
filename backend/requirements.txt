@@ -38,3 +38,6 @@ pydantic>=2.0.0
 # ============= FREYA 编排层 =============
 # JWT 认证（HS256）
 PyJWT>=2.8.0
+
+# 按用户密钥加密存储（Fernet）
+cryptography>=41.0.0

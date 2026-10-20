@@ -100,7 +100,17 @@ class LLMClient:
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
-        
+        # BYOK：请求级用户密钥优先（无请求上下文或未设置时保持 Config 值）。
+        from ..freya.keys.inject import effective_llm
+
+        _ukey, _ubase, _umodel = effective_llm()
+        if not api_key and _ukey:
+            self.api_key = _ukey
+        if not base_url and _ubase:
+            self.base_url = _ubase
+        if not model and _umodel:
+            self.model = _umodel
+
         if not self.api_key:
             raise ValueError("LLM_API_KEY 未配置")
         

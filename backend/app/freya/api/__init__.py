@@ -14,6 +14,7 @@ from .search import search_bp
 from .notifications import notifications_bp
 from .settings import settings_bp
 from .persona import persona_bp
+from ..keys.routes import keys_bp
 
 
 def register_freya_blueprints(app: Flask) -> None:
@@ -26,6 +27,7 @@ def register_freya_blueprints(app: Flask) -> None:
     app.register_blueprint(notifications_bp, url_prefix="/api/freya")
     app.register_blueprint(settings_bp, url_prefix="/api/freya/settings")
     app.register_blueprint(persona_bp, url_prefix="/api/freya/persona")
+    app.register_blueprint(keys_bp, url_prefix="/api/freya/keys")
 
 
 __all__ = ["register_freya_blueprints"]

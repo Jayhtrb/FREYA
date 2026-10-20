@@ -97,6 +97,12 @@ CREATE TABLE IF NOT EXISTS settings (
     voice TEXT,
     updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_keys (
+    user_id TEXT PRIMARY KEY,
+    payload TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 # 允许测试通过环境变量/调用方覆盖数据库路径，而不污染真实数据文件。
