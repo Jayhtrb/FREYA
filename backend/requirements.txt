@@ -39,5 +39,5 @@ pydantic>=2.0.0
 # JWT 认证（HS256）
 PyJWT>=2.8.0
 
-# 按用户密钥加密存储（Fernet）
-cryptography>=41.0.0
+# 注意：按用户密钥加密（Fernet）依赖 cryptography，已作为 camel-ai 的
+# 传递依赖随 uv.lock 安装；本地极简测试环境请另行 `pip install cryptography`。
