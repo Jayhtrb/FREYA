@@ -13,14 +13,18 @@ from .loader import Persona, get_persona
 _DEFAULT_BOUNDARIES = {"morning": 5, "afternoon": 12, "evening": 17, "night": 21}
 
 
-def _period_for_hour(hour: int) -> str:
-    """根据小时返回时间段名（morning/afternoon/evening/night）。"""
-    # night 覆盖 21:00 至次日 05:00（含 0-4 点）。
-    if hour >= 21 or hour < 5:
+def _period_for_hour(hour: int, boundaries: dict) -> str:
+    """根据小时与 JSON 声明的边界返回时间段名（morning/afternoon/evening/night）。"""
+    night = int(boundaries.get("night", 21))
+    morning = int(boundaries.get("morning", 5))
+    afternoon = int(boundaries.get("afternoon", 12))
+    evening = int(boundaries.get("evening", 17))
+    # night 覆盖 night:00 至次日 morning:00（含凌晨）。
+    if hour >= night or hour < morning:
         return "night"
-    if hour >= 17:
+    if hour >= evening:
         return "evening"
-    if hour >= 12:
+    if hour >= afternoon:
         return "afternoon"
     return "morning"
 
@@ -33,8 +37,7 @@ def time_greeting(hour: Optional[int] = None, persona: Optional[Persona] = None)
 
     # 优先使用 JSON 声明的边界；缺省时用硬编码默认值兜底。
     boundaries = greeting_block.get("time_boundaries_hour") or _DEFAULT_BOUNDARIES
-    period = _period_for_hour(hour)
-    # 边界表中若不存在该时段（异常数据），回退到 _period_for_hour 结果。
+    period = _period_for_hour(hour, boundaries)
     greetings = greeting_block.get("time_greetings", {})
     return greetings.get(period) or greetings.get("morning") or "Good morning"
 

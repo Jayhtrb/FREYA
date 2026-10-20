@@ -1,3 +1,27 @@
+# ⚡ FREYA — Flexible Reasoning Engine for Your Applications
+
+> **One intelligence. Every interface. Your world.**
+
+FREYA is a voice-enabled personal AI assistant with a **native Android app** (Kotlin + Jetpack Compose +
+Material 3) as its primary interface, built on the **MiroFish** swarm-intelligence engine (AGPL-3.0). It adds
+a versioned persona layer, JWT auth + per-user isolation, DeepSeek-based assistant reasoning, tool
+orchestration over the MiroFish engine, and user-controlled memory — while preserving every MiroFish
+capability documented below.
+
+**Status (CI-verified):** backend tests **164 passed** (Python 3.11 + 3.12) · Android **debug APK builds**
+(18 MB) · frontend build passes. Live end-to-end runs still need API keys (`DEEPSEEK_API_KEY`,
+`LLM_API_KEY`, `ZEP_API_KEY`) and a device/emulator.
+
+- [docs/architecture.md](docs/architecture.md) — layered design & security model
+- [docs/api-contract.md](docs/api-contract.md) — the REST API
+- [docs/deployment.md](docs/deployment.md) · [docs/troubleshooting.md](docs/troubleshooting.md)
+- [docs/feature-parity-matrix.md](docs/feature-parity-matrix.md) — implementation & verification status
+- [persona/freya.persona.json](persona/freya.persona.json) — versioned FREYA identity
+
+---
+
+<!-- ============ Original MiroFish README (preserved for attribution) ============ -->
+
 <div align="center">
 
 <img src="./static/image/MiroFish_logo_compressed.jpeg" alt="MiroFish Logo" width="75%"/>
