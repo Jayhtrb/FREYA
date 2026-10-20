@@ -14,7 +14,7 @@ capability documented below.
 
 - [docs/architecture.md](docs/architecture.md) — layered design & security model
 - [docs/api-contract.md](docs/api-contract.md) — the REST API
-- [docs/deployment.md](docs/deployment.md) · [docs/troubleshooting.md](docs/troubleshooting.md)
+- [docs/deployment.md](docs/deployment.md) · [docs/troubleshooting.md](docs/troubleshooting.md) · [docs/device-testing.md](docs/device-testing.md)
 - [docs/feature-parity-matrix.md](docs/feature-parity-matrix.md) — implementation & verification status
 - [persona/freya.persona.json](persona/freya.persona.json) — versioned FREYA identity
 

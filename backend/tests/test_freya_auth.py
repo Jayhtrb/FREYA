@@ -51,6 +51,14 @@ def test_jwt_issue_and_verify():
     assert verify_token("not-a-token") is None
 
 
+def test_jwt_secret_is_not_weak_default():
+    # 未显式配置时，密钥必须是随机值而非可预测的硬编码默认值。
+    from app.config import Config
+
+    assert Config.FREYA_JWT_SECRET != "mirofish-secret-key"
+    assert len(Config.FREYA_JWT_SECRET) >= 32
+
+
 def test_register_and_login(client):
     reg = _register(client)
     assert reg.status_code == 201

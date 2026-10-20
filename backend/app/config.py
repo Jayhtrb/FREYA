@@ -1,6 +1,8 @@
 """\n配置管理\n统一从项目根目录的 .env 文件加载配置\n"""
 
 import os
+import secrets
+import warnings
 from dotenv import load_dotenv
 
 # 加载项目根目录的 .env 文件
@@ -31,8 +33,15 @@ class Config:
     DEEPSEEK_MODEL = os.environ.get('DEEPSEEK_MODEL', 'deepseek-chat')
     
     # JWT 认证
-    FREYA_JWT_SECRET = os.environ.get('FREYA_JWT_SECRET') or os.environ.get(
-        'SECRET_KEY', 'mirofish-secret-key'
+    # 密钥来源：FREYA_JWT_SECRET > SECRET_KEY > 每进程随机值（仅开发/测试兜底）。
+    # 随机值避免可预测的硬编码密钥，但 token 不跨重启存活；生产必须显式设置。
+    _JWT_SECRET_EXPLICIT = bool(
+        os.environ.get('FREYA_JWT_SECRET') or os.environ.get('SECRET_KEY')
+    )
+    FREYA_JWT_SECRET = (
+        os.environ.get('FREYA_JWT_SECRET')
+        or os.environ.get('SECRET_KEY')
+        or secrets.token_hex(32)
     )
     FREYA_JWT_TTL_SECONDS = int(os.environ.get('FREYA_JWT_TTL_SECONDS', '604800'))
     
@@ -97,6 +106,11 @@ class Config:
         if os.environ.get("ZEP_API_URL"):
             errors.append("ZEP_API_URL 不受支持；MiroFish 仅连接 Zep Cloud")
         if cls.DEBUG:
-            import warnings
             warnings.warn("Flask DEBUG mode is enabled. Do not use in production.", RuntimeWarning)
+        if not cls._JWT_SECRET_EXPLICIT:
+            warnings.warn(
+                "FREYA_JWT_SECRET is not set; using a per-process random secret. "
+                "Set FREYA_JWT_SECRET (>= 32 bytes) in production so tokens survive restarts.",
+                RuntimeWarning,
+            )
         return errors
