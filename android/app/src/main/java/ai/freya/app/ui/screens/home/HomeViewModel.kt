@@ -36,8 +36,12 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val providerConfigured = session.providerConfigured
     val backendReachable = session.backendReachable
 
+    val activeModel = session.activeModel
+
     val partial = voice.partial
     val inputLevel = voice.inputLevel
+    val outputLevel = voice.outputLevel
+    val outputMeasured = voice.outputMeasured
     val wordTick = voice.wordTick
     val wordSynced = voice.wordSynced
     val audible = voice.audible

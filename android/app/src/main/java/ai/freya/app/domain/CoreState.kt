@@ -5,11 +5,11 @@ import ai.freya.app.voice.VoiceState
 /** The seven visual states of the FREYA Core. Each maps to something actually happening. */
 enum class CoreState(val label: String) {
     IDLE("Standing by"),
-    LISTENING("Listening"),
+    LISTENING("Listening to you"),
     PROCESSING("Thinking"),
-    TOOL_EXECUTION("Running task"),
+    TOOL_EXECUTION("Running a task"),
     SPEAKING("Speaking"),
-    AWAITING_APPROVAL("Needs your approval"),
+    AWAITING_APPROVAL("Waiting for your approval"),
     ERROR("Something went wrong"),
 }
 

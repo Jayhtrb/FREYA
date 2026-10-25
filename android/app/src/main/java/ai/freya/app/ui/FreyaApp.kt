@@ -23,6 +23,20 @@ import ai.freya.app.ui.theme.Motion
 import ai.freya.app.ui.theme.Radius
 import ai.freya.app.ui.theme.Space
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -142,6 +156,8 @@ fun FreyaApp() {
                             onNavigateToSearch = { navController.navigate(Routes.SEARCH) },
                             onOpenControlCenter = { go(Routes.CONTROL) },
                             onOpenPower = { navController.navigate(Routes.POWER) },
+                            onOpenProjects = { go(Routes.PROJECTS) },
+                            onOpenSettings = { go(Routes.SETTINGS) },
                         )
                     }
                     composable(Routes.CONTROL) {
@@ -149,6 +165,7 @@ fun FreyaApp() {
                             onBack = null,
                             onOpenPower = { navController.navigate(Routes.POWER) },
                             onOpenMemory = { navController.navigate(Routes.MEMORY) },
+                            onOpenJobs = { navController.navigate(Routes.JOBS) },
                         )
                     }
                     composable(Routes.PROJECTS) {
@@ -245,40 +262,47 @@ private fun SessionOverlays(showTaskPill: Boolean, modifier: Modifier) {
     }
 }
 
+/**
+ * Restrained navigation: no container, a hairline divider, small mono labels and a single
+ * accent dot for the selected item, so it never competes with the Core.
+ */
 @Composable
 private fun FreyaBottomBar(navController: NavHostController, currentRoute: String?) {
     val c = FreyaTheme.colors
     val items = listOf(
-        BottomNavItem(Routes.HOME, "FREYA", Icons.Outlined.Hub),
+        BottomNavItem(Routes.HOME, "FREYA", Icons.Outlined.Home),
         BottomNavItem(Routes.PROJECTS, "Projects", Icons.Outlined.Folder),
-        BottomNavItem(Routes.CONTROL, "Control", Icons.Outlined.Tune),
-        BottomNavItem(Routes.JOBS, "Tasks", Icons.Outlined.TaskAlt),
+        BottomNavItem(Routes.CONTROL, "Tools", Icons.Outlined.GridView),
         BottomNavItem(Routes.SETTINGS, "Settings", Icons.Outlined.Settings),
     )
-    NavigationBar(
-        containerColor = if (c.isDark) Color(0xCC070A14) else Color(0xE6FFFFFF),
-        tonalElevation = 0.dp,
-    ) {
-        items.forEach { item ->
-            NavigationBarItem(
-                selected = currentRoute == item.route,
-                onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = { Icon(imageVector = item.icon, contentDescription = null) },
-                label = { Text(item.label, style = MaterialTheme.typography.labelSmall) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = c.cyan,
-                    selectedTextColor = c.cyan,
-                    indicatorColor = c.cyan.copy(alpha = 0.12f),
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-            )
+    Column(Modifier.fillMaxWidth().background(if (c.isDark) Color(0x99050710) else Color(0xCCFFFFFF)).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, c.glassBorder, Color.Transparent))))
+        Row(Modifier.fillMaxWidth().height(64.dp), verticalAlignment = Alignment.CenterVertically) {
+            items.forEach { item ->
+                val isSelected = currentRoute == item.route
+                val tint = if (isSelected) c.cyan else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable(role = androidx.compose.ui.semantics.Role.Tab) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                        .semantics { selected = isSelected },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Icon(item.icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.height(4.dp))
+                    Text(item.label.uppercase(), style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.4.sp), color = tint)
+                    Spacer(Modifier.height(3.dp))
+                    Box(Modifier.size(4.dp).clip(CircleShape).background(if (isSelected) c.violet else Color.Transparent))
+                }
+            }
         }
     }
 }

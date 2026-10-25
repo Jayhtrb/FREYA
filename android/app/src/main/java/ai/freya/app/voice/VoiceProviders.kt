@@ -36,6 +36,10 @@ interface TextToSpeechProvider {
         onError: (String) -> Unit = {},
         onStart: () -> Unit = {},
         onWord: (Int, Int) -> Unit = { _, _ -> },
+        /** Measured output loudness 0..1 from the audio actually being played (~every 30 ms). */
+        onLevel: (Float) -> Unit = {},
+        /** true when [onLevel] carries measured amplitude; false when only timing is available. */
+        onMeasured: (Boolean) -> Unit = {},
     )
 
     fun setSpeechRate(rate: Float) = Unit

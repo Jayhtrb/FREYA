@@ -67,6 +67,6 @@ class AppContainer(context: Context) {
 
     // ---- Session (conversation, tasks, approvals; drives the FREYA Core on every screen) ----
     val session: FreyaSession by lazy {
-        FreyaSession(chatRepository, toolsRepository, keysRepository, dataStore, voiceController)
+        FreyaSession(chatRepository, toolsRepository, keysRepository, settingsRepository, dataStore, voiceController)
     }
 }

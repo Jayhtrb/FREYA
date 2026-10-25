@@ -14,26 +14,23 @@ enum class ToolRisk(val label: String) {
     SENSITIVE("Changes data or uses paid compute"),
 }
 
-data class ToolInfo(val title: String, val risk: ToolRisk, val why: String)
+data class ToolInfo(val title: String, val risk: ToolRisk, val why: String, val activeLabel: String = "Working on $title")
 
 object ToolPolicy {
     private val known = mapOf(
-        "inspect_graph" to ToolInfo("Inspect knowledge graph", ToolRisk.READ_ONLY, "Reads graph nodes and edges."),
-        "explain_relationships" to ToolInfo("Explain relationships", ToolRisk.READ_ONLY, "Reads graph relationships."),
-        "compare_scenarios" to ToolInfo("Compare scenarios", ToolRisk.READ_ONLY, "Reads existing simulation runs."),
-        "summarize_findings" to ToolInfo("Summarize findings", ToolRisk.READ_ONLY, "Reads an existing report."),
+        "inspect_graph" to ToolInfo("Inspect knowledge graph", ToolRisk.READ_ONLY, "Reads graph nodes and edges.", activeLabel = "Inspecting your knowledge graph"),
+        "explain_relationships" to ToolInfo("Explain relationships", ToolRisk.READ_ONLY, "Reads graph relationships.", activeLabel = "Tracing relationships in your graph"),
+        "compare_scenarios" to ToolInfo("Compare scenarios", ToolRisk.READ_ONLY, "Reads existing simulation runs.", activeLabel = "Comparing your simulation runs"),
+        "summarize_findings" to ToolInfo("Summarize findings", ToolRisk.READ_ONLY, "Reads an existing report.", activeLabel = "Summarizing report findings"),
         "run_simulation" to ToolInfo(
             "Run simulation", ToolRisk.SENSITIVE,
-            "Creates and starts a new simulation. Uses model credits and can run for a long time.",
-        ),
+            "Creates and starts a new simulation. Uses model credits and can run for a long time.", activeLabel = "Running a simulation"),
         "generate_report" to ToolInfo(
             "Generate report", ToolRisk.SENSITIVE,
-            "Starts report generation, which calls the AI provider many times.",
-        ),
+            "Starts report generation, which calls the AI provider many times.", activeLabel = "Generating your report"),
         "interview_agents" to ToolInfo(
             "Interview agents", ToolRisk.SENSITIVE,
-            "Sends prompts to running simulation agents; each answer is a paid model call.",
-        ),
+            "Sends prompts to running simulation agents; each answer is a paid model call.", activeLabel = "Interviewing simulation agents"),
     )
 
     fun info(name: String): ToolInfo = known[name] ?: ToolInfo(

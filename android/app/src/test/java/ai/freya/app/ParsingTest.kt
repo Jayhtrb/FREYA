@@ -53,7 +53,8 @@ class ParsingTest {
     @Test fun suggestionsHiddenWhileBusyAndCapped() {
         assertTrue(Suggestions.forContext(true, true, busy = true, lastReply = null, hour = 9).isEmpty())
         val s = Suggestions.forContext(false, true, busy = false, lastReply = null, hour = 9)
-        assertTrue(s.size <= 3)
+        assertTrue(s.size <= 4)
+        assertTrue(s.any { it.action == SuggestionAction.OpenProjects })
         assertEquals(SuggestionAction.OpenPower, s.first().action)
     }
 

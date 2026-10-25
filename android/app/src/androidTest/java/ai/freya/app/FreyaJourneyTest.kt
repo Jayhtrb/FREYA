@@ -67,7 +67,7 @@ class FreyaJourneyTest {
 
         // ---- home (idle) ----
         dismissSystemDialogs()
-        val idle = device.wait(Until.findObject(By.text("Standing by")), 30_000)
+        val idle = device.wait(Until.findObject(By.text("STANDING BY")), 30_000)
         assertNotNull("Home did not show the idle Core", idle)
         Thread.sleep(1500)
         shot("01-home-idle-avatar")
@@ -83,6 +83,29 @@ class FreyaJourneyTest {
         assertNotNull("No streamed reply from the backend", reply)
         Thread.sleep(800)
         shot("03-conversation")
+
+        step("speaking") {
+            // Turn on spoken replies, then ask something; captures the SPEAKING state if the
+            // emulator image has a TTS engine.
+            device.findObject(By.text("SETTINGS")).click()
+            device.wait(Until.hasObject(By.text("Appearance")), timeout)
+            val label = findWithScroll(By.text("Voice output"))
+            label?.parent?.findObject(By.checkable(true))?.let { if (!it.isChecked) it.click() }
+            device.findObjects(By.text("FREYA")).maxByOrNull { it.visibleBounds.top }?.click()
+            device.wait(Until.hasObject(By.text("STANDING BY")), timeout)
+            device.findObject(By.clazz("android.widget.EditText")).text = "Tell me about memory"
+            hideKeyboard()
+            device.wait(Until.findObject(By.desc("Send")), timeout).click()
+            device.findObject(By.desc("Show FREYA Core"))?.click()
+            if (device.wait(Until.hasObject(By.text("SPEAKING")), 15_000)) {
+                Thread.sleep(700); shot("05b-speaking")
+                Thread.sleep(500); shot("05c-speaking-later")
+            } else {
+                Log.i(TAG, "no SPEAKING state (no TTS engine on this image?)")
+            }
+            device.wait(Until.hasObject(By.text("STANDING BY")), 30_000)
+            device.findObject(By.desc("Show conversation"))?.click()
+        }
 
         step("details") {
             device.findObject(By.text("Details"))?.click()
@@ -103,17 +126,17 @@ class FreyaJourneyTest {
                 return@step
             }
             talk.click()
-            if (device.wait(Until.hasObject(By.text("Listening")), 5_000)) {
+            if (device.wait(Until.hasObject(By.text("LISTENING TO YOU")), 5_000)) {
                 Thread.sleep(700)
                 shot("06-listening")
             }
             device.findObject(By.desc("Stop"))?.click()
-            device.wait(Until.hasObject(By.text("Standing by")), 8_000)
+            device.wait(Until.hasObject(By.text("STANDING BY")), 8_000)
         }
 
         // ---- Control Center ----
         step("control-center") {
-            device.findObject(By.text("Control")).click()
+            device.findObject(By.text("TOOLS")).click()
             device.wait(Until.hasObject(By.text("AI systems")), timeout)
             Thread.sleep(2500)
             shot("07-control-center")
@@ -150,23 +173,23 @@ class FreyaJourneyTest {
         }
 
         step("home-after-task") {
-            device.findObject(By.text("FREYA"))?.click()
+            device.findObjects(By.text("FREYA")).maxByOrNull { it.visibleBounds.top }?.click()
             Thread.sleep(1500)
             shot("13-home-after-task")
         }
 
         // ---- appearance: light theme + abstract core ----
         step("light-theme") {
-            device.findObject(By.text("Settings")).click()
+            device.findObject(By.text("SETTINGS")).click()
             device.wait(Until.hasObject(By.text("Appearance")), timeout)
             device.findObject(By.text("Light"))?.click()
             device.findObject(By.text("Abstract core"))?.click()
             Thread.sleep(800)
             shot("14-settings-light")
-            device.findObject(By.text("FREYA"))?.click()
+            device.findObjects(By.text("FREYA")).maxByOrNull { it.visibleBounds.top }?.click()
             Thread.sleep(1500)
             shot("15-home-light-abstract-core")
-            device.findObject(By.text("Settings")).click()
+            device.findObject(By.text("SETTINGS")).click()
             device.wait(Until.hasObject(By.text("Appearance")), timeout)
             device.findObject(By.text("Dark"))?.click()
             device.findObject(By.text("Avatar"))?.click()

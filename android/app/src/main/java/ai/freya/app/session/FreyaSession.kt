@@ -5,6 +5,7 @@ import ai.freya.app.data.remote.ChatStreamEvent
 import ai.freya.app.data.remote.FreyaException
 import ai.freya.app.data.repository.ChatRepository
 import ai.freya.app.data.repository.KeysRepository
+import ai.freya.app.data.repository.SettingsRepository
 import ai.freya.app.data.repository.ToolsRepository
 import ai.freya.app.data.repository.replyText
 import ai.freya.app.domain.CoreInputs
@@ -58,6 +59,7 @@ class FreyaSession(
     private val chatRepo: ChatRepository,
     private val toolsRepo: ToolsRepository,
     private val keysRepo: KeysRepository,
+    private val settingsRepo: SettingsRepository,
     private val dataStore: FreyaDataStore,
     val voice: VoiceController,
 ) {
@@ -95,6 +97,10 @@ class FreyaSession(
     /** null = unknown / backend unreachable; true/false = BYOK status from the backend. */
     private val _providerConfigured = MutableStateFlow<Boolean?>(null)
     val providerConfigured: StateFlow<Boolean?> = _providerConfigured.asStateFlow()
+
+    /** Model reported by the backend on the last reply, else the saved model setting. */
+    private val _activeModel = MutableStateFlow<String?>(null)
+    val activeModel: StateFlow<String?> = _activeModel.asStateFlow()
 
     private val _backendReachable = MutableStateFlow<Boolean?>(null)
     val backendReachable: StateFlow<Boolean?> = _backendReachable.asStateFlow()
@@ -163,6 +169,7 @@ class FreyaSession(
                         is ChatStreamEvent.Done -> {
                             event.conversationId?.takeIf { it.isNotBlank() }?.let { _conversationId.value = it }
                             model = event.model
+                            event.model?.let { _activeModel.value = it }
                         }
                         is ChatStreamEvent.Error -> throw FreyaException(event.message)
                     }
@@ -203,6 +210,7 @@ class FreyaSession(
     ): Boolean = try {
         val response = chatRepo.sendChat(message, conversationId)
         response.conversationId?.let { _conversationId.value = it }
+        response.model?.let { _activeModel.value = it }
         val text = response.replyText().orEmpty()
         finish(placeholderId, text, TurnMeta(
             model = response.model, conversationId = _conversationId.value, transport = "request (stream unavailable)",
@@ -280,6 +288,9 @@ class FreyaSession(
                     _backendReachable.value = (it as? FreyaException)?.code != null
                     _providerConfigured.value = null
                 }
+            if (_activeModel.value == null) {
+                runCatching { settingsRepo.settings().model }.getOrNull()?.let { _activeModel.value = it }
+            }
         }
     }
 

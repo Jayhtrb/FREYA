@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
  * signals for the UI. Every value here comes from the platform:
  *  - [inputLevel]  : microphone level from SpeechRecognizer.onRmsChanged (0..1)
  *  - [partial]     : live partial transcript from onPartialResults
- *  - [wordTick]    : increments each time the TTS engine reports a spoken word (onRangeStart)
+ *  - [outputLevel] : loudness of FREYA's voice at the real playback position (measured path)
+ *  - [wordTick]    : increments each time the TTS engine reports a spoken word (fallback path)
  *  - [speakingText]: the utterance currently being spoken, plus [spokenUpTo] offset
  * Must be driven from the main thread.
  */
@@ -44,6 +45,14 @@ class VoiceController(
     /** True between the engine's real onStart and onDone (audio is actually playing). */
     private val _audible = MutableStateFlow(false)
     val audible: StateFlow<Boolean> = _audible.asStateFlow()
+
+    /** Loudness of FREYA's own voice at the current playback position (0..1). */
+    private val _outputLevel = MutableStateFlow(0f)
+    val outputLevel: StateFlow<Float> = _outputLevel.asStateFlow()
+
+    /** true when [outputLevel] is measured from the audio being played; false = timing only. */
+    private val _outputMeasured = MutableStateFlow(false)
+    val outputMeasured: StateFlow<Boolean> = _outputMeasured.asStateFlow()
 
     private val _speakingText = MutableStateFlow<String?>(null)
     val speakingText: StateFlow<String?> = _speakingText.asStateFlow()
@@ -120,9 +129,12 @@ class VoiceController(
         _spokenUpTo.value = 0
         _wordSynced.value = false
         _audible.value = false
+        _outputMeasured.value = false
         ttsProvider.speak(
             text = text,
             onStart = { _audible.value = true },
+            onLevel = { _outputLevel.value = it },
+            onMeasured = { _outputMeasured.value = it },
             onWord = { _, end ->
                 _wordSynced.value = true
                 _spokenUpTo.value = end
@@ -141,6 +153,7 @@ class VoiceController(
 
     private fun finishSpeaking() {
         _audible.value = false
+        _outputLevel.value = 0f
         _speakingText.value = null
         if (_state.value == VoiceState.SPEAKING) _state.value = VoiceState.IDLE
     }
@@ -155,6 +168,7 @@ class VoiceController(
         ttsProvider.stop()
         sttProvider.cancel()
         _audible.value = false
+        _outputLevel.value = 0f
         _speakingText.value = null
         _inputLevel.value = 0f
         _state.value = VoiceState.IDLE

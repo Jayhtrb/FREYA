@@ -21,5 +21,5 @@ object Routes {
     fun report(simulationId: String) = "report/$simulationId"
     fun interview(simulationId: String) = "interview/$simulationId"
 
-    val bottomLevel: Set<String> = setOf(HOME, PROJECTS, CONTROL, JOBS, SETTINGS)
+    val bottomLevel: Set<String> = setOf(HOME, PROJECTS, CONTROL, SETTINGS)
 }

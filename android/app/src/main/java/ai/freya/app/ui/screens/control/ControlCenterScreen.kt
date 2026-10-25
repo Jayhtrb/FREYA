@@ -73,6 +73,7 @@ fun ControlCenterScreen(
     onBack: (() -> Unit)?,
     onOpenPower: () -> Unit,
     onOpenMemory: () -> Unit,
+    onOpenJobs: () -> Unit = {},
 ) {
     val vm: ControlCenterViewModel = viewModel()
     val context = LocalContext.current
@@ -118,7 +119,7 @@ fun ControlCenterScreen(
                         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
                     }
                     Column(Modifier.weight(1f)) {
-                        Text("CONTROL CENTER", style = MaterialTheme.typography.labelMedium, color = c.cyan)
+                        Text("TOOLS & CONTROL", style = MaterialTheme.typography.labelMedium, color = c.cyan)
                         Text("AI systems", style = MaterialTheme.typography.headlineMedium)
                     }
                     IconButton(onClick = { vm.refresh(); vm.runChecks(mic) }) {
@@ -244,6 +245,8 @@ fun ControlCenterScreen(
                             )
                         }
                     }
+                    Spacer(Modifier.height(Space.sm))
+                    GlassAction("Background jobs & notifications", null, onOpenJobs)
                     if (runs.isNotEmpty()) {
                         Spacer(Modifier.height(Space.md))
                         Text("RECENT TASKS (THIS DEVICE)", style = MaterialTheme.typography.labelSmall, color = c.textMuted)

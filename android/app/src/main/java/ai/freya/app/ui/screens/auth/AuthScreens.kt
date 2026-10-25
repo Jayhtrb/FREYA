@@ -1,10 +1,9 @@
 package ai.freya.app.ui.screens.auth
 
 import ai.freya.app.domain.CoreState
-import ai.freya.app.ui.core.CoreSignals
+import ai.freya.app.ui.core.CoreAppearance
 import ai.freya.app.ui.core.FreyaCore
 import ai.freya.app.ui.core.Presence
-import kotlinx.coroutines.flow.emptyFlow
 import androidx.compose.runtime.remember
 import ai.freya.app.domain.Persona
 import ai.freya.app.ui.components.FreyaEmblem
@@ -209,9 +208,10 @@ private fun AuthScaffold(
         Spacer(Modifier.height(24.dp))
         FreyaCore(
             state = CoreState.IDLE,
-            signals = remember { CoreSignals(emptyFlow(), 0, false, false, 0, 0) },
             presence = Presence.CORE,
-            modifier = Modifier.size(150.dp),
+            appearance = CoreAppearance.Compact,
+            compact = true,
+            modifier = Modifier.size(170.dp),
             animate = false,
         )
         Spacer(Modifier.height(16.dp))

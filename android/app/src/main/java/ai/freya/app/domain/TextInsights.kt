@@ -20,13 +20,15 @@ sealed interface SuggestionAction {
     data class Send(val text: String) : SuggestionAction
     data object OpenControlCenter : SuggestionAction
     data object OpenPower : SuggestionAction
+    data object OpenProjects : SuggestionAction
 }
 
 data class Suggestion(val label: String, val action: SuggestionAction)
 
 /**
- * Context-aware suggestions. Deterministic, at most [max], and empty while FREYA is busy
- * so the screen never fills up with chips.
+ * Context-aware quick actions. Deterministic, at most [max], empty while FREYA is busy.
+ * Every action maps to something the app can really do (send a prompt or open a screen);
+ * nothing implies a capability that isn't connected (e.g. there is no "Search the web").
  */
 object Suggestions {
     fun forContext(
@@ -35,7 +37,7 @@ object Suggestions {
         busy: Boolean,
         lastReply: String?,
         hour: Int,
-        max: Int = 3,
+        max: Int = 4,
     ): List<Suggestion> {
         if (busy) return emptyList()
         val out = mutableListOf<Suggestion>()
@@ -44,12 +46,13 @@ object Suggestions {
         }
         if (conversationEmpty) {
             out += when (hour) {
-                in 5..11 -> Suggestion("Plan my morning", SuggestionAction.Send("Help me plan my morning. Ask me what's on my plate first."))
+                in 5..11 -> Suggestion("Plan my day", SuggestionAction.Send("Help me plan my day. Ask me what's on my plate first."))
                 in 12..16 -> Suggestion("Unblock a task", SuggestionAction.Send("I'm stuck on a task. Ask me questions until we find the next step."))
                 else -> Suggestion("Wrap up my day", SuggestionAction.Send("Help me wrap up today and list what's left for tomorrow."))
             }
+            out += Suggestion("Check my projects", SuggestionAction.OpenProjects)
+            out += Suggestion("Run a task", SuggestionAction.OpenControlCenter)
             out += Suggestion("What can you do?", SuggestionAction.Send("What can you actually do for me right now, with the tools you have connected?"))
-            out += Suggestion("Open Control Center", SuggestionAction.OpenControlCenter)
         } else if (!lastReply.isNullOrBlank()) {
             if (TextInsights.hasCode(lastReply)) {
                 out += Suggestion("Explain this code", SuggestionAction.Send("Walk me through that code step by step."))
@@ -61,6 +64,7 @@ object Suggestions {
                 out += Suggestion("Which source is best?", SuggestionAction.Send("Of the sources you mentioned, which is most reliable and why?"))
             }
             out += Suggestion("What's the next step?", SuggestionAction.Send("What should I do next?"))
+            out += Suggestion("Check my projects", SuggestionAction.OpenProjects)
         }
         return out.distinctBy { it.label }.take(max)
     }
