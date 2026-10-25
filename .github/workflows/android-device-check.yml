@@ -17,7 +17,7 @@ on:
       - '.github/workflows/android-device-check.yml'
 
 permissions:
-  contents: read
+  contents: write   # only used to force-push results to the ci/device-journey branch
 
 jobs:
   journey:
@@ -96,6 +96,39 @@ jobs:
             android/app/build/reports/androidTests/
             ${{ runner.temp }}/backend.log
           if-no-files-found: warn
+
+      # Artifacts are also published to a throwaway branch so they can be fetched with plain git
+      # (and browsed on GitHub) from environments that can't reach artifact storage.
+      - name: Publish results to ci/device-journey branch
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PUB="$RUNNER_TEMP/pub"
+          mkdir -p "$PUB"
+          cp -r screenshots "$PUB/" 2>/dev/null || true
+          cp journey-logcat.txt "$PUB/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/backend.log" "$PUB/" 2>/dev/null || true
+          cp android/app/build/outputs/apk/debug/*.apk "$PUB/" 2>/dev/null || true
+          cp -r android/app/build/outputs/androidTest-results "$PUB/" 2>/dev/null || true
+          RESULT=PASSED; [ -f journey-failed ] && RESULT=FAILED
+          printf "Device journey for %s (run %s): %s\n" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$RESULT" > "$PUB/README.md"
+          cd "$PUB"
+          git init -q -b ci/device-journey
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Device journey ${GITHUB_SHA::7}: $RESULT"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci/device-journey
+
+      - name: Report journey details as an annotation
+        if: always()
+        run: |
+          FAIL=$(grep -rhoE '<failure message="[^"]{0,1500}' android/app/build/outputs/androidTest-results 2>/dev/null | head -3)
+          STEPS=$(grep -hE 'FreyaJourney|AndroidRuntime' journey-logcat.txt 2>/dev/null | sed -E 's/^.{0,32}(FreyaJourney|AndroidRuntime)/\1/' | tail -40)
+          SHOTS=$(ls screenshots/screenshots 2>/dev/null | tr '\n' ' ')
+          MSG=$(printf 'failure: %s\n---\nscreens: %s\n---\n%s' "$FAIL" "$SHOTS" "$STEPS" | head -c 20000 | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::notice title=Journey details::${MSG}"
 
       - name: Fail if the journey failed
         run: test ! -f journey-failed
