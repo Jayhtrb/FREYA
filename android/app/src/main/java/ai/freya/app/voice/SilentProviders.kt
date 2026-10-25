@@ -1,12 +1,17 @@
 package ai.freya.app.voice
 
 /**
- * Text-only fallbacks used when the device lacks speech recognition or TTS,
- * or when the user has not granted microphone permission.
+ * Text-only fallbacks used when the device lacks speech recognition or TTS.
  */
 class SilentSpeechToTextProvider : SpeechToTextProvider {
     override val isAvailable: Boolean get() = false
-    override fun startListening(onPartial: (String) -> Unit, onResult: (String) -> Unit, onError: (String) -> Unit) {
+    override fun startListening(
+        onPartial: (String) -> Unit,
+        onResult: (String) -> Unit,
+        onError: (String) -> Unit,
+        onLevel: (Float) -> Unit,
+        onReady: () -> Unit,
+    ) {
         onError("Voice input is not available on this device.")
     }
     override fun stopListening() = Unit
@@ -15,7 +20,13 @@ class SilentSpeechToTextProvider : SpeechToTextProvider {
 
 class SilentTextToSpeechProvider : TextToSpeechProvider {
     override val isAvailable: Boolean get() = false
-    override fun speak(text: String, onDone: () -> Unit, onError: (String) -> Unit) {
+    override fun speak(
+        text: String,
+        onDone: () -> Unit,
+        onError: (String) -> Unit,
+        onStart: () -> Unit,
+        onWord: (Int, Int) -> Unit,
+    ) {
         onError("Voice output is not available on this device.")
     }
     override fun stop() = Unit

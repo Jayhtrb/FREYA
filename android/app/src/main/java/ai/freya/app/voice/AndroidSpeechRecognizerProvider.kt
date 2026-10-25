@@ -9,57 +9,69 @@ import android.speech.SpeechRecognizer
 
 /**
  * One-shot (push-to-talk) speech recognition backed by the Android SpeechRecognizer.
- * This is not continuous or duplex listening; recognition stops on end-of-speech or on error.
+ * This is not continuous or duplex listening; recognition stops on end-of-speech,
+ * on [stopListening], or on error. Must be called on the main thread; the platform
+ * delivers listener callbacks on the main thread.
+ *
+ * Privacy note: the system recognizer may process audio on-device or send it to the
+ * recognition service chosen in Android settings (often Google). FREYA itself never
+ * records or uploads raw audio; only the final transcript is sent as a chat message.
  */
 class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
 
     private val appContext = context.applicationContext
     private var recognizer: SpeechRecognizer? = null
-    private var available = SpeechRecognizer.isRecognitionAvailable(appContext)
 
-    override val isAvailable: Boolean get() = available && recognizer != null
+    // Fixed: previously this also required `recognizer != null`, which is only true after the
+    // first listen, so the mic control was hidden on a fresh launch.
+    override val isAvailable: Boolean = SpeechRecognizer.isRecognitionAvailable(appContext)
 
     override fun startListening(
         onPartial: (String) -> Unit,
         onResult: (String) -> Unit,
         onError: (String) -> Unit,
+        onLevel: (Float) -> Unit,
+        onReady: () -> Unit,
     ) {
-        if (!available) {
+        if (!isAvailable) {
             onError("Speech recognition is not available on this device")
             return
         }
         shutdown()
         val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(appContext)
         recognizer = speechRecognizer
-
-        val onPartialResult: (String) -> Unit = onPartial
-        val onFinalResult: (String) -> Unit = onResult
-        val onFailure: (String) -> Unit = onError
+        val partialCb = onPartial
+        val resultCb = onResult
+        val errorCb = onError
+        val levelCb = onLevel
+        val readyCb = onReady
 
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) = Unit
+            override fun onReadyForSpeech(params: Bundle?) = readyCb()
             override fun onBeginningOfSpeech() = Unit
-            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onRmsChanged(rmsdB: Float) = levelCb(normaliseRms(rmsdB))
             override fun onBufferReceived(buffer: ByteArray?) = Unit
-            override fun onEndOfSpeech() = Unit
+            override fun onEndOfSpeech() = levelCb(0f)
             override fun onEvent(eventType: Int, params: Bundle?) = Unit
 
             override fun onPartialResults(partialResults: Bundle?) {
                 val text = partialResults
                     ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()
-                if (!text.isNullOrBlank()) onPartialResult(text)
+                if (!text.isNullOrBlank()) partialCb(text)
             }
 
             override fun onResults(results: Bundle?) {
+                levelCb(0f)
                 val text = results
                     ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()
-                if (!text.isNullOrBlank()) onFinalResult(text) else onFailure("I didn't catch that. Please try again.")
+                if (!text.isNullOrBlank()) resultCb(text) else errorCb("I didn't catch that. Please try again.")
             }
 
             override fun onError(error: Int) {
-                onFailure(errorMessage(error))
+                levelCb(0f)
+                errorCb(errorMessage(error))
             }
         })
 
@@ -69,11 +81,15 @@ class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
         }
         runCatching { speechRecognizer.startListening(intent) }
-            .onFailure { onFailure("Could not start listening: ${it.message}") }
+            .onFailure { onError("Could not start listening: ${it.message}") }
     }
 
     override fun stopListening() {
         runCatching { recognizer?.stopListening() }
+    }
+
+    override fun cancel() {
+        runCatching { recognizer?.cancel() }
     }
 
     override fun shutdown() {
@@ -83,13 +99,18 @@ class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
 
     private fun errorMessage(error: Int): String = when (error) {
         SpeechRecognizer.ERROR_AUDIO -> "A recording error occurred."
-        SpeechRecognizer.ERROR_CLIENT -> "A client error occurred."
+        SpeechRecognizer.ERROR_CLIENT -> "Listening was cancelled."
         SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission is required."
-        SpeechRecognizer.ERROR_NETWORK -> "A network error occurred."
+        SpeechRecognizer.ERROR_NETWORK -> "The speech service had a network error."
         SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Speech recognition timed out."
         SpeechRecognizer.ERROR_NO_MATCH -> "I didn't catch that. Please try again."
         SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "The recognizer is busy."
         SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech detected."
         else -> "Speech recognition failed."
+    }
+
+    companion object {
+        /** Android reports roughly -2..10 dB; map to 0..1 with a little headroom. */
+        fun normaliseRms(rmsdB: Float): Float = ((rmsdB + 2f) / 12f).coerceIn(0f, 1f)
     }
 }

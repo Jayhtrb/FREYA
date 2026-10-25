@@ -1,5 +1,6 @@
 package ai.freya.app.ui.screens.projects
 
+import androidx.compose.ui.graphics.Color
 import ai.freya.app.FreyaApplication
 import ai.freya.app.data.remote.dto.ProjectDto
 import ai.freya.app.domain.model.UploadFile
@@ -151,7 +152,7 @@ fun ProjectsScreen(
                 text = { Text("New project") },
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
     ) { padding ->
         Column(
             modifier = Modifier

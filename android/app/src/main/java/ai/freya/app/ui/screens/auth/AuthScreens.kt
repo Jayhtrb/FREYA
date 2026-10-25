@@ -1,6 +1,12 @@
 package ai.freya.app.ui.screens.auth
 
-import ai.freya.app.domain.Persona
+import ai.freya.app.domain.CoreState
+import ai.freya.app.ui.core.CoreSignals
+import ai.freya.app.ui.core.FreyaCore
+import ai.freya.app.ui.core.Presence
+import kotlinx.coroutines.flow.emptyFlow
+import androidx.compose.runtime.remember
+ai.freya.app.domain.Persona
 import ai.freya.app.ui.components.FreyaEmblem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -201,7 +207,12 @@ private fun AuthScaffold(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(24.dp))
-        FreyaEmblem(modifier = Modifier.size(72.dp))
+        FreyaCore(
+            state = CoreState.IDLE,
+            signals = remember { CoreSignals(emptyFlow(), 0, false, false, 0, 0) },
+            presence = Presence.CORE,
+            modifier = Modifier.size(150.dp),
+        )
         Spacer(Modifier.height(16.dp))
         Text(text = title, style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(4.dp))

@@ -1,5 +1,6 @@
 package ai.freya.app.ui.screens.search
 
+import androidx.compose.ui.graphics.Color
 import ai.freya.app.FreyaApplication
 import ai.freya.app.domain.model.SearchHit
 import ai.freya.app.ui.components.EmptyState
@@ -95,7 +96,7 @@ fun SearchScreen() {
 
     var query by rememberSaveable { mutableStateOf("") }
 
-    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+    Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -9,6 +9,8 @@ import ai.freya.app.data.remote.NetworkModule
 import ai.freya.app.data.repository.AuthRepository
 import ai.freya.app.data.repository.ChatRepository
 import ai.freya.app.data.repository.KeysRepository
+import ai.freya.app.data.repository.ToolsRepository
+import ai.freya.app.session.FreyaSession
 import ai.freya.app.data.repository.MemoryRepository
 import ai.freya.app.data.repository.ProjectsRepository
 import ai.freya.app.data.repository.ReportRepository
@@ -56,9 +58,15 @@ class AppContainer(context: Context) {
     val memoryRepository = MemoryRepository(api)
     val settingsRepository = SettingsRepository(api)
     val keysRepository = KeysRepository(api)
+    val toolsRepository = ToolsRepository(api)
 
     // ---- Voice (system STT/TTS; they self-report availability and degrade to text-only) ----
     val sttProvider: SpeechToTextProvider = AndroidSpeechRecognizerProvider(appContext)
     val ttsProvider: TextToSpeechProvider = AndroidTextToSpeechProvider(appContext)
     val voiceController = VoiceController(sttProvider, ttsProvider)
+
+    // ---- Session (conversation, tasks, approvals; drives the FREYA Core on every screen) ----
+    val session: FreyaSession by lazy {
+        FreyaSession(chatRepository, toolsRepository, keysRepository, dataStore, voiceController)
+    }
 }

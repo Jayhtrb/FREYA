@@ -51,6 +51,10 @@ android {
         buildConfig true
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -102,4 +106,7 @@ dependencies {
 
     // ---- Coroutines ----
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+
+    // ---- Unit tests (pure Kotlin/JVM: state derivation, policy, parsing, validation) ----
+    testImplementation 'junit:junit:4.13.2'
 }

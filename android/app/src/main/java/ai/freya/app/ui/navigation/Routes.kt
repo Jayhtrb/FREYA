@@ -11,6 +11,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val MEMORY = "memory"
     const val POWER = "power"
+    const val CONTROL = "control"
 
     const val SIMULATION = "simulation/{projectId}"
     const val REPORT = "report/{simulationId}"
@@ -20,5 +21,5 @@ object Routes {
     fun report(simulationId: String) = "report/$simulationId"
     fun interview(simulationId: String) = "interview/$simulationId"
 
-    val bottomLevel: Set<String> = setOf(HOME, PROJECTS, SEARCH, JOBS, SETTINGS)
+    val bottomLevel: Set<String> = setOf(HOME, PROJECTS, CONTROL, JOBS, SETTINGS)
 }

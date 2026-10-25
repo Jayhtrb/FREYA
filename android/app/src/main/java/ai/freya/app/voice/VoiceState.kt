@@ -1,6 +1,10 @@
 package ai.freya.app.voice
 
-/** FREYA voice states as declared by the persona (idle/listening/thinking/speaking/task_execution). */
+/**
+ * Voice-pipeline states. THINKING / TASK_EXECUTION are kept for compatibility with the
+ * persona contract; the UI derives its richer [ai.freya.app.domain.CoreState] from the
+ * session, not from this enum alone.
+ */
 enum class VoiceState {
     IDLE,
     LISTENING,

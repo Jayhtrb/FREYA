@@ -1,5 +1,10 @@
 package ai.freya.app.ui.screens.settings
 
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.Slider
+import androidx.compose.material3.FilterChip
 import ai.freya.app.FreyaApplication
 import ai.freya.app.domain.model.MemoryPreference
 import ai.freya.app.ui.components.EmptyState
@@ -99,6 +104,26 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { dataStore.setHandsFree(value) }
     }
 
+    fun setThemeMode(value: String) {
+        viewModelScope.launch { dataStore.setThemeMode(value) }
+    }
+
+    fun setPresence(value: String) {
+        viewModelScope.launch { dataStore.setPresence(value) }
+    }
+
+    fun setReduceMotion(value: Boolean) {
+        viewModelScope.launch { dataStore.setReduceMotion(value) }
+    }
+
+    fun setHaptics(value: Boolean) {
+        viewModelScope.launch { dataStore.setHaptics(value) }
+    }
+
+    fun setSpeechRate(value: Float) {
+        viewModelScope.launch { dataStore.setSpeechRate(value) }
+    }
+
     fun signOut() {
         viewModelScope.launch { authRepo.logout() }
     }
@@ -108,6 +133,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 fun SettingsScreen(
     onOpenMemory: () -> Unit,
     onOpenPower: () -> Unit,
+    onOpenControlCenter: () -> Unit = {},
 ) {
     val vm: SettingsViewModel = viewModel()
     val user by vm.storedUser.collectAsStateWithLifecycle(initialValue = null)
@@ -116,6 +142,11 @@ fun SettingsScreen(
     val voice by vm.dataStore.voice.collectAsStateWithLifecycle(initialValue = "system_tts")
     val voiceEnabled by vm.dataStore.voiceEnabled.collectAsStateWithLifecycle(initialValue = false)
     val handsFree by vm.dataStore.handsFreeEnabled.collectAsStateWithLifecycle(initialValue = false)
+    val themeMode by vm.dataStore.themeMode.collectAsStateWithLifecycle(initialValue = "dark")
+    val presence by vm.dataStore.presence.collectAsStateWithLifecycle(initialValue = "avatar")
+    val reduceMotion by vm.dataStore.reduceMotion.collectAsStateWithLifecycle(initialValue = false)
+    val hapticsOn by vm.dataStore.haptics.collectAsStateWithLifecycle(initialValue = true)
+    val speechRate by vm.dataStore.speechRate.collectAsStateWithLifecycle(initialValue = 1f)
     val saving by vm.saving.collectAsStateWithLifecycle(initialValue = false)
     val message by vm.message.collectAsStateWithLifecycle()
 
@@ -127,7 +158,7 @@ fun SettingsScreen(
     LaunchedEffect(model) { if (modelEdit.isBlank()) modelEdit = model }
     LaunchedEffect(voice) { if (voiceEdit.isBlank()) voiceEdit = voice }
 
-    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+    Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -147,6 +178,33 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Text("Appearance", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            ChoiceRow(
+                label = "Theme",
+                options = listOf("dark" to "Dark", "light" to "Light", "system" to "System"),
+                selected = themeMode,
+                onSelect = vm::setThemeMode,
+            )
+            ChoiceRow(
+                label = "FREYA presence",
+                options = listOf("avatar" to "Avatar", "core" to "Abstract core"),
+                selected = presence,
+                onSelect = vm::setPresence,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Reduce motion", style = MaterialTheme.typography.bodyLarge)
+                    Text("Stops ambient animation; states stay visible by colour and shape. Also follows the system setting.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = reduceMotion, onCheckedChange = { vm.setReduceMotion(it) })
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Haptics", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                Switch(checked = hapticsOn, onCheckedChange = { vm.setHaptics(it) })
             }
 
             Spacer(Modifier.height(16.dp))
@@ -183,9 +241,16 @@ fun SettingsScreen(
                 Switch(checked = voiceEnabled, onCheckedChange = { vm.setVoiceEnabled(it) })
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Hands-free (tap to talk each turn)", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                Text("Hands-free (listen again after each reply)", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Switch(checked = handsFree, onCheckedChange = { vm.setHandsFree(it) })
             }
+            Text("Speech speed · ${"%.1f".format(speechRate)}×", style = MaterialTheme.typography.bodyLarge)
+            Slider(
+                value = speechRate,
+                onValueChange = { vm.setSpeechRate((it * 10).roundToInt() / 10f) },
+                valueRange = 0.5f..2.0f,
+                steps = 14,
+            )
 
             message?.let {
                 Spacer(Modifier.height(8.dp))
@@ -199,6 +264,13 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(if (saving) "Saving…" else "Save settings")
+            }
+
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = onOpenControlCenter, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Tune, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("AI Control Center")
             }
 
             Spacer(Modifier.height(8.dp))
@@ -377,5 +449,28 @@ fun MemoryScreen(onBack: () -> Unit) {
             Text("Add preference")
         }
         Spacer(Modifier.height(8.dp))
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun ChoiceRow(
+    label: String,
+    options: List<Pair<String, String>>,
+    selected: String,
+    onSelect: (String) -> Unit,
+) {
+    Column(Modifier.padding(vertical = 4.dp)) {
+        Text(label, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (value, text) ->
+                FilterChip(
+                    selected = selected == value,
+                    onClick = { onSelect(value) },
+                    label = { Text(text) },
+                )
+            }
+        }
     }
 }

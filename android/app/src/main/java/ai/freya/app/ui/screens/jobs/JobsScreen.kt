@@ -1,5 +1,6 @@
 package ai.freya.app.ui.screens.jobs
 
+import androidx.compose.ui.graphics.Color
 import ai.freya.app.FreyaApplication
 import ai.freya.app.domain.model.JobItem
 import ai.freya.app.domain.model.NotificationItem
@@ -94,7 +95,7 @@ fun JobsScreen() {
     val busy by vm.busy.collectAsStateWithLifecycle(initialValue = false)
     val error by vm.error.collectAsStateWithLifecycle()
 
-    Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+    Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

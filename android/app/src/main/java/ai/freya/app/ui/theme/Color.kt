@@ -2,32 +2,55 @@ package ai.freya.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ---- Dark palette (brand default: deep charcoal + midnight) ----
-val Charcoal900 = Color(0xFF0B0B12)
-val Midnight800 = Color(0xFF12121C)
-val Midnight700 = Color(0xFF1A1A28)
-val Midnight600 = Color(0xFF23232F)
+/*
+ * FREYA colour tokens.
+ *
+ * The dark palette is the primary experience: near-black "void" with a
+ * midnight-blue lift, and three restrained accents (violet, cyan, ice).
+ * Accents are used for light and state, never as large fills. All text/surface
+ * pairs below were chosen to clear WCAG AA (4.5:1) for body text.
+ */
 
-// Electric violet + cyan accents (subtle, not neon).
-val ElectricViolet = Color(0xFF8B7BFF)
+// ---- Dark base ----
+val Void = Color(0xFF05060B)            // window / deepest background
+val Abyss = Color(0xFF080B16)           // backdrop gradient end
+val Midnight = Color(0xFF0C1226)        // midnight-blue lift behind the core
+val Charcoal900 = Color(0xFF0A0C14)     // kept for older references
+val Midnight800 = Color(0xFF10141F)     // surface
+val Midnight700 = Color(0xFF161B2A)     // raised surface
+val Midnight600 = Color(0xFF222838)     // outline variant
+
+// ---- Glass (translucent panels drawn over the backdrop) ----
+val GlassFill = Color(0x14A9B8FF)       // ~8% icy tint
+val GlassFillStrong = Color(0x24A9B8FF) // ~14% for pressed / selected
+val GlassBorder = Color(0x2EBFD0FF)     // ~18% hairline
+val GlassHighlight = Color(0x1FFFFFFF)  // top-edge sheen
+
+// ---- Accents ----
+val ElectricViolet = Color(0xFF9A8CFF)
 val ElectricVioletDim = Color(0xFF6C5CE7)
-val CyanGlow = Color(0xFF79E4FF)
-val CyanDim = Color(0xFF3FB6C9)
+val CyanGlow = Color(0xFF6FE3FF)
+val CyanDim = Color(0xFF2FA9C4)
+val IceBlue = Color(0xFFCFE8FF)
 
-val TextPrimaryDark = Color(0xFFECECF4)
-val TextSecondaryDark = Color(0xFFB6B6C6)
-val TextMutedDark = Color(0xFF83839A)
+// ---- Text (dark) ----
+val TextPrimaryDark = Color(0xFFEEF1FA)
+val TextSecondaryDark = Color(0xFFAEB6CC)
+val TextMutedDark = Color(0xFF7F88A3)
 
-// ---- Light palette ----
-val BackgroundLight = Color(0xFFF6F5FB)
+// ---- Semantic state colours ----
+val ApprovalAmber = Color(0xFFFFC46B)
+val ErrorRed = Color(0xFFFF6B72)
+val SuccessGreen = Color(0xFF4FD18B)
+
+// ---- Light palette (optional theme; keeps the same hues, inverted luminance) ----
+val BackgroundLight = Color(0xFFF3F5FB)
 val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFECEBF5)
-val VioletLight = Color(0xFF5445C0)
-val CyanLight = Color(0xFF0E7C86)
-val TextPrimaryLight = Color(0xFF17161F)
-val TextSecondaryLight = Color(0xFF4B4A5A)
-val TextMutedLight = Color(0xFF7A7990)
-
-// ---- Shared ----
-val ErrorRed = Color(0xFFE5484D)
-val SuccessGreen = Color(0xFF2FA36B)
+val SurfaceVariantLight = Color(0xFFE6EAF5)
+val VioletLight = Color(0xFF5141C9)
+val CyanLight = Color(0xFF00788F)
+val TextPrimaryLight = Color(0xFF111522)
+val TextSecondaryLight = Color(0xFF465069)
+val TextMutedLight = Color(0xFF6D7690)
+val GlassFillLight = Color(0x99FFFFFF)
+val GlassBorderLight = Color(0x1F1B2A55)
