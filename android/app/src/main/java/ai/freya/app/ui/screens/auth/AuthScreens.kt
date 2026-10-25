@@ -6,7 +6,7 @@ import ai.freya.app.ui.core.FreyaCore
 import ai.freya.app.ui.core.Presence
 import kotlinx.coroutines.flow.emptyFlow
 import androidx.compose.runtime.remember
-ai.freya.app.domain.Persona
+import ai.freya.app.domain.Persona
 import ai.freya.app.ui.components.FreyaEmblem
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

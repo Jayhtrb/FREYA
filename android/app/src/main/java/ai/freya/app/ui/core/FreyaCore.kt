@@ -18,8 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -91,7 +89,8 @@ fun FreyaCore(
     LaunchedEffect(signals.level) { signals.level.collect { level.animateTo(it, tween(90, easing = LinearEasing)) } }
 
     // ---- clock: runs only while something live is moving ----
-    var time by remember { mutableFloatStateOf(0f) }
+    // Held as a state object and only read in the draw phase / coroutines, so frames never recompose.
+    val clock = remember { mutableFloatStateOf(0f) }
     val origin = remember { System.nanoTime() }
     val calm = state == CoreState.IDLE || state == CoreState.AWAITING_APPROVAL
     val runClock = !reduceMotion && state != CoreState.ERROR
@@ -102,7 +101,7 @@ fun FreyaCore(
         while (true) {
             withFrameNanos { now ->
                 if (now - last >= minFrame) {
-                    time = (now - origin) / 1_000_000_000f
+                    clock.floatValue = (now - origin) / 1_000_000_000f
                     last = now
                 }
             }
@@ -112,10 +111,9 @@ fun FreyaCore(
     // ---- speech: ripples on each real spoken word ----
     val ripples = remember { mutableStateListOf<Float>() }
     val speech = remember { Animatable(0f) } // mouth / pulse envelope 0..1
-    val currentTime by rememberUpdatedState(time)
     LaunchedEffect(signals.wordTick) {
         if (signals.wordTick == 0L || !signals.audible) return@LaunchedEffect
-        pulse(ripples, speech, currentTime, reduceMotion)
+        pulse(ripples, speech, clock.floatValue, reduceMotion)
     }
     // Documented approximation: engines that do not report word ranges get a cadence-based
     // pulse, but only while audio is actually playing (between onStart and onDone).
@@ -123,7 +121,7 @@ fun FreyaCore(
         if (!signals.audible || signals.wordSynced) return@LaunchedEffect
         delay(450) // give the engine a chance to report real word ranges first
         while (true) {
-            pulse(ripples, speech, currentTime, reduceMotion)
+            pulse(ripples, speech, clock.floatValue, reduceMotion)
             delay((260 / signals.speechRate.coerceIn(0.5f, 2f)).toLong())
         }
     }
@@ -157,7 +155,7 @@ fun FreyaCore(
             liveRegion = LiveRegionMode.Polite
         },
     ) {
-        val t = time
+        val t = clock.floatValue
         val c = center
         val outer = size.minDimension / 2f * 0.86f
         val orb = outer * 0.50f

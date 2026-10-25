@@ -108,15 +108,15 @@ internal fun DrawScope.drawAvatar(
                 // Content, closed "smiling" eyes after a completed task.
                 val arc = Path().apply {
                     moveTo(ec.x - eyeW / 2f, ec.y + eyeW * 0.08f)
-                    quadraticTo(ec.x, ec.y - eyeW * 0.30f, ec.x + eyeW / 2f, ec.y + eyeW * 0.08f)
+                    quadraticBezierTo(ec.x, ec.y - eyeW * 0.30f, ec.x + eyeW / 2f, ec.y + eyeW * 0.08f)
                 }
                 drawPath(arc, accent, style = Stroke(stroke * 1.8f, cap = StrokeCap.Round))
             } else {
                 val h = eyeW * 0.42f * open
                 val almond = Path().apply {
                     moveTo(ec.x - eyeW / 2f, ec.y)
-                    quadraticTo(ec.x, ec.y - h, ec.x + eyeW / 2f, ec.y)
-                    quadraticTo(ec.x, ec.y + h, ec.x - eyeW / 2f, ec.y)
+                    quadraticBezierTo(ec.x, ec.y - h, ec.x + eyeW / 2f, ec.y)
+                    quadraticBezierTo(ec.x, ec.y + h, ec.x - eyeW / 2f, ec.y)
                     close()
                 }
                 drawPath(almond, colors.ice.copy(alpha = 0.95f))
@@ -139,7 +139,7 @@ internal fun DrawScope.drawAvatar(
         } else {
             val mouth = Path().apply {
                 moveTo(cx - mw / 2f, my)
-                quadraticTo(cx, my + curve, cx + mw / 2f, my)
+                quadraticBezierTo(cx, my + curve, cx + mw / 2f, my)
             }
             drawPath(mouth, line.copy(alpha = 0.75f), style = Stroke(stroke * 1.3f, cap = StrokeCap.Round))
         }
