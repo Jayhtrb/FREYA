@@ -50,7 +50,8 @@ class FreyaJourneyTest {
             fields[0].text = "Justin"
             fields[1].text = "journey+${System.currentTimeMillis()}@example.com"
             fields[2].text = "FreyaJourney#2026"
-            device.findObject(By.text("Create account")).click()
+            // The register screen title is also "Create account"; target the button.
+            device.findObject(By.text("Create account").clickable(true)).click()
         }
 
         // ---- home (idle) ----
@@ -108,27 +109,27 @@ class FreyaJourneyTest {
         }
 
         step("approval") {
-            val run = findWithScroll(By.text("Run"))
+            val run = findWithScroll(By.text("Run").clickable(true))
             run!!.click()
             device.wait(Until.hasObject(By.text("Run simulation")), timeout)
             val fields = device.findObjects(By.clazz("android.widget.EditText"))
             fields.getOrNull(0)?.text = "demo_project"
             fields.getOrNull(1)?.text = "Journey test — should be denied"
-            device.findObject(By.text("Review & approve")).click()
+            device.findObject(By.text("Review & approve").clickable(true)).click()
             device.wait(Until.hasObject(By.text("APPROVAL REQUIRED")), timeout)
             Thread.sleep(900)
             shot("10-awaiting-approval")
-            device.findObject(By.text("Deny")).click()
+            device.findObject(By.text("Deny").clickable(true)).click()
             Thread.sleep(800)
         }
 
         step("read-only-task") {
-            val runs = device.findObjects(By.text("Run"))
+            val runs = device.findObjects(By.text("Run").clickable(true))
             // Second tool in the backend registry is inspect_graph (read-only).
             runs.getOrNull(1)?.click() ?: return@step
-            device.wait(Until.hasObject(By.text("Run now")), timeout)
+            device.wait(Until.hasObject(By.text("Run now").clickable(true)), timeout)
             device.findObjects(By.clazz("android.widget.EditText")).firstOrNull()?.text = "demo_graph"
-            device.findObject(By.text("Run now")).click()
+            device.findObject(By.text("Run now").clickable(true)).click()
             Thread.sleep(400)
             shot("11-task-running")
             Thread.sleep(3000)

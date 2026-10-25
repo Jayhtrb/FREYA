@@ -109,6 +109,9 @@ fun FreyaApp() {
     FreyaBackdrop {
         Scaffold(
             containerColor = Color.Transparent,
+            // A transparent container has no matching content colour, so set it explicitly;
+            // otherwise un-styled text falls back to black on the dark backdrop.
+            contentColor = MaterialTheme.colorScheme.onBackground,
             bottomBar = {
                 if (currentRoute != null && currentRoute in Routes.bottomLevel) {
                     FreyaBottomBar(navController, currentRoute)

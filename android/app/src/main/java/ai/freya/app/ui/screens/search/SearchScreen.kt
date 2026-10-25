@@ -96,7 +96,7 @@ fun SearchScreen() {
 
     var query by rememberSaveable { mutableStateOf("") }
 
-    Scaffold(containerColor = Color.Transparent) { padding ->
+    Scaffold(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

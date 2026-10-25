@@ -95,7 +95,7 @@ fun JobsScreen() {
     val busy by vm.busy.collectAsStateWithLifecycle(initialValue = false)
     val error by vm.error.collectAsStateWithLifecycle()
 
-    Scaffold(containerColor = Color.Transparent) { padding ->
+    Scaffold(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -152,7 +152,7 @@ fun ProjectsScreen(
                 text = { Text("New project") },
             )
         },
-        containerColor = Color.Transparent,
+        containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground,
     ) { padding ->
         Column(
             modifier = Modifier

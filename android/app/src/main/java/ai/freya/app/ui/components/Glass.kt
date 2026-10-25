@@ -30,6 +30,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -80,8 +82,11 @@ fun FreyaBackdrop(modifier: Modifier = Modifier, content: @Composable BoxScope.(
                     }
                 }
             },
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+            content()
+        }
+    }
 }
 
 /** Translucent panel with a hairline border and top-edge sheen. No real blur (cheap on every device). */

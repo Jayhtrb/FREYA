@@ -158,7 +158,7 @@ fun SettingsScreen(
     LaunchedEffect(model) { if (modelEdit.isBlank()) modelEdit = model }
     LaunchedEffect(voice) { if (voiceEdit.isBlank()) voiceEdit = voice }
 
-    Scaffold(containerColor = Color.Transparent) { padding ->
+    Scaffold(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
