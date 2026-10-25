@@ -168,10 +168,11 @@ class ControlCenterViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun schemaFields(schema: JsonElement?, required: Set<String>): List<ToolField> {
         val props = (schema as? JsonObject)?.get("properties") as? JsonObject ?: return emptyList()
+        // The backend serialises properties alphabetically; show required fields first.
         return props.entries.map { (name, def) ->
             val type = (def.jsonObject["type"] as? JsonPrimitive)?.contentOrNull ?: "string"
             ToolField(name, type, name in required)
-        }
+        }.sortedBy { if (it.required) 0 else 1 }
     }
 
     companion object {

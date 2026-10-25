@@ -34,6 +34,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -330,33 +332,35 @@ private fun HomeTopBar(
     onControl: () -> Unit,
 ) {
     val c = FreyaTheme.colors
-    Row(
-        Modifier.fillMaxWidth().padding(start = Space.gutter, end = Space.xs, top = Space.sm, bottom = Space.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AnimatedVisibility(conversationMode) {
-            Row { miniCore(); Spacer(Modifier.width(Space.sm)) }
-        }
-        Column(Modifier.weight(1f)) {
-            Text(Persona.NAME, style = MaterialTheme.typography.headlineSmall.copy(letterSpacing = MaterialTheme.typography.headlineSmall.letterSpacing * 6))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusChip(state.label, color = stateChipColor(state))
-                Spacer(Modifier.width(6.dp))
-                when {
-                    reachable == false -> StatusChip("offline", color = c.error)
-                    providerOnline -> StatusChip("core online", color = c.success)
-                    else -> StatusChip("no provider", color = c.approval)
-                }
+    Column(Modifier.fillMaxWidth().padding(start = Space.gutter, end = Space.xs, top = Space.sm, bottom = Space.xs)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AnimatedVisibility(conversationMode) {
+                Row { miniCore(); Spacer(Modifier.width(Space.sm)) }
+            }
+            Text(
+                Persona.NAME,
+                style = MaterialTheme.typography.headlineSmall.copy(letterSpacing = MaterialTheme.typography.headlineSmall.letterSpacing * 6),
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+            )
+            IconButton(onClick = onSearch) { Icon(Icons.Outlined.Search, contentDescription = "Search") }
+            IconButton(onClick = onNewConversation) { Icon(Icons.Outlined.AddComment, contentDescription = "New conversation") }
+            IconButton(onClick = onControl) { Icon(Icons.Outlined.Tune, contentDescription = "Control Center") }
+            IconButton(onClick = onToggleMode) {
+                Icon(
+                    if (conversationMode) Icons.Outlined.Hub else Icons.Outlined.Forum,
+                    contentDescription = if (conversationMode) "Show FREYA Core" else "Show conversation",
+                )
             }
         }
-        IconButton(onClick = onSearch) { Icon(Icons.Outlined.Search, contentDescription = "Search") }
-        IconButton(onClick = onNewConversation) { Icon(Icons.Outlined.AddComment, contentDescription = "New conversation") }
-        IconButton(onClick = onControl) { Icon(Icons.Outlined.Tune, contentDescription = "Control Center") }
-        IconButton(onClick = onToggleMode) {
-            Icon(
-                if (conversationMode) Icons.Outlined.Hub else Icons.Outlined.Forum,
-                contentDescription = if (conversationMode) "Show FREYA Core" else "Show conversation",
-            )
+        // Status chips get their own row so they never squeeze or wrap.
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            StatusChip(state.label, color = stateChipColor(state))
+            when {
+                reachable == false -> StatusChip("offline", color = c.error)
+                providerOnline -> StatusChip("core online", color = c.success)
+                else -> StatusChip("no provider", color = c.approval)
+            }
         }
     }
 }
@@ -473,14 +477,15 @@ private fun ConversationView(
 @Composable
 private fun SuggestionRow(suggestions: List<Suggestion>, onClick: (Suggestion) -> Unit) {
     AnimatedVisibility(suggestions.isNotEmpty()) {
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = Space.gutter),
+        // A plain scrolling Row (max 3 chips): a lazy row would keep its anchor item when a chip
+        // is prepended and appear pre-scrolled.
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = Space.gutter, vertical = Space.xs),
             horizontalArrangement = Arrangement.spacedBy(Space.sm),
-            modifier = Modifier.padding(vertical = Space.xs),
         ) {
-            items(suggestions, key = { it.label }) { s ->
-                GlassAction(s.label, null, { onClick(s) })
-            }
+            suggestions.forEach { s -> GlassAction(s.label, null, { onClick(s) }) }
         }
     }
 }

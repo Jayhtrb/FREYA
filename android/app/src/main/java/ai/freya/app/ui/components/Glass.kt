@@ -151,7 +151,7 @@ fun StatusChip(
             Box(Modifier.size(6.dp).clip(CircleShape).background(color))
             Spacer(Modifier.width(6.dp))
         }
-        Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = color)
+        Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = color, maxLines = 1, softWrap = false)
     }
 }
 
