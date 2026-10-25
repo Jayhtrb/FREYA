@@ -42,6 +42,7 @@ class FreyaJourneyTest {
 
         // Diagnostics: what the accessibility layer exposes right after launch.
         Thread.sleep(3000)
+        dismissSystemDialogs()
         val ua = instrumentation.uiAutomation
         Log.i(TAG, "active root pkg=${ua.rootInActiveWindow?.packageName} children=${ua.rootInActiveWindow?.childCount}")
         ua.windows.forEach { w -> Log.i(TAG, "window type=${w.type} layer=${w.layer} active=${w.isActive} title=${w.title} root=${w.root?.packageName}") }
@@ -65,6 +66,7 @@ class FreyaJourneyTest {
         }
 
         // ---- home (idle) ----
+        dismissSystemDialogs()
         val idle = device.wait(Until.findObject(By.text("Standing by")), 30_000)
         assertNotNull("Home did not show the idle Core", idle)
         Thread.sleep(1500)
@@ -177,6 +179,17 @@ class FreyaJourneyTest {
         }
         context.startActivity(intent)
         device.wait(Until.hasObject(By.pkg(pkg).depth(0)), timeout)
+    }
+
+    /** Cold CI emulators sometimes show "<System app> isn't responding"; that's not FREYA. */
+    private fun dismissSystemDialogs() {
+        repeat(3) {
+            val wait = device.findObject(By.text("Wait")) ?: device.findObject(By.res("android:id/aerr_wait"))
+            if (wait == null) return
+            Log.i(TAG, "dismissing system ANR dialog")
+            wait.click()
+            Thread.sleep(1500)
+        }
     }
 
     private fun hideKeyboard() {
