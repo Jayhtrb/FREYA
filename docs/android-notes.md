@@ -58,7 +58,10 @@ remove it and use HTTPS for production.
 
 ## Screens
 
-Auth → Home (streaming chat + voice) · Projects (create + upload) · Simulation
+See `docs/futuristic-ui.md` for the immersive interface (FREYA Core, avatar, design system,
+Control Center, interaction contract, implemented vs. not-built).
+
+Auth → Home (FREYA Core + streaming conversation + push-to-talk) · Control Center · Projects (create + upload) · Simulation
 (create/prepare/run + run-status polling) · Report (view/download/agent chat) ·
 Interview · Search (scoped) · Settings (personality/model/voice + memory + sign out) ·
 Jobs (tasks + notifications).

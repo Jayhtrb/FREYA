@@ -5,6 +5,7 @@ import ai.freya.app.domain.Persona
 import ai.freya.app.domain.Suggestion
 import ai.freya.app.domain.SuggestionAction
 import ai.freya.app.domain.ToolPolicy
+import ai.freya.app.domain.model.MessageKind
 import ai.freya.app.domain.model.MessageStatus
 import ai.freya.app.ui.components.GlassAction
 import ai.freya.app.ui.components.GlassPanel
@@ -240,9 +241,13 @@ fun HomeScreen(
                         onGreetingShown = vm::markGreetingShown,
                         onOpenConversation = { conversationMode = true },
                         onRetry = {
-                            messages.lastOrNull { !it.isUser && it.status == MessageStatus.FAILED }?.let { vm.retry(it.id) }
+                            messages.lastOrNull { !it.isUser }
+                                ?.takeIf { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT }
+                                ?.let { vm.retry(it.id) }
                         },
-                        canRetry = messages.lastOrNull { !it.isUser }?.status == MessageStatus.FAILED,
+                        // Retry re-sends a chat prompt, so it only applies to failed chat replies, not tasks.
+                        canRetry = messages.lastOrNull { !it.isUser }
+                            ?.let { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT } == true,
                         onDismissError = vm::dismissError,
                         onCheckConnection = {
                             vm.refreshStatus()
