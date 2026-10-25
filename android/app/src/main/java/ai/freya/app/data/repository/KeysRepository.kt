@@ -31,6 +31,9 @@ class KeysRepository(private val api: FreyaApi) {
             )
         }.requireData()
 
+    suspend fun ttsStatus(): ai.freya.app.data.remote.dto.TtsStatusDto =
+        ApiErrors.safe { api.ttsStatus() }.requireData()
+
     suspend fun clear() {
         ApiErrors.safe { api.clearKeys() }.requireSuccess()
     }

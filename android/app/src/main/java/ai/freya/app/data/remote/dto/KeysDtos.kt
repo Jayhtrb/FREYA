@@ -34,3 +34,13 @@ data class KeysUpdateRequest(
     @SerialName("llm_model_name") val llmModelName: String? = null,
     @SerialName("zep_api_key") val zepApiKey: String? = null,
 )
+
+/** GET /api/freya/tts/status — Voicebox configuration on the backend (no secrets). */
+@Serializable
+data class TtsStatusDto(
+    val configured: Boolean = false,
+    val reachable: Boolean = false,
+    val voice: String? = null,
+    val model: String? = null,
+    val error: String? = null,
+)

@@ -124,6 +124,28 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { dataStore.setSpeechRate(value) }
     }
 
+    fun setVoiceEngine(value: String) {
+        viewModelScope.launch { dataStore.setVoiceEngine(value) }
+        if (value == "voicebox") refreshTts()
+    }
+
+    private val _tts = MutableStateFlow<ai.freya.app.data.remote.dto.TtsStatusDto?>(null)
+    val tts: StateFlow<ai.freya.app.data.remote.dto.TtsStatusDto?> = _tts.asStateFlow()
+    private val _ttsError = MutableStateFlow<String?>(null)
+    val ttsError: StateFlow<String?> = _ttsError.asStateFlow()
+
+    fun refreshTts() {
+        viewModelScope.launch {
+            runCatching { container.keysRepository.ttsStatus() }
+                .onSuccess { _tts.value = it; _ttsError.value = null }
+                .onFailure { _ttsError.value = it.message }
+        }
+    }
+
+    init {
+        refreshTts()
+    }
+
     fun signOut() {
         viewModelScope.launch { authRepo.logout() }
     }
@@ -147,6 +169,9 @@ fun SettingsScreen(
     val reduceMotion by vm.dataStore.reduceMotion.collectAsStateWithLifecycle(initialValue = false)
     val hapticsOn by vm.dataStore.haptics.collectAsStateWithLifecycle(initialValue = true)
     val speechRate by vm.dataStore.speechRate.collectAsStateWithLifecycle(initialValue = 1f)
+    val voiceEngine by vm.dataStore.voiceEngine.collectAsStateWithLifecycle(initialValue = "system")
+    val tts by vm.tts.collectAsStateWithLifecycle()
+    val ttsError by vm.ttsError.collectAsStateWithLifecycle()
     val saving by vm.saving.collectAsStateWithLifecycle(initialValue = false)
     val message by vm.message.collectAsStateWithLifecycle()
 
@@ -244,6 +269,24 @@ fun SettingsScreen(
                 Text("Hands-free (listen again after each reply)", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Switch(checked = handsFree, onCheckedChange = { vm.setHandsFree(it) })
             }
+            ChoiceRow(
+                label = "Voice engine",
+                options = listOf("system" to "Phone voice", "voicebox" to "Voicebox"),
+                selected = voiceEngine,
+                onSelect = vm::setVoiceEngine,
+            )
+            Text(
+                text = when {
+                    ttsError != null -> "Voicebox status unavailable: $ttsError"
+                    tts == null -> "Checking Voicebox…"
+                    tts?.configured != true -> "Voicebox isn't set up on your FREYA server yet. Add VOICEBOX_URL (and VOICEBOX_VOICE) to .env.local and restart it. Until then FREYA uses the phone voice."
+                    tts?.reachable != true -> "Voicebox is configured but not reachable. Is it running? FREYA falls back to the phone voice."
+                    else -> "Voicebox ready" + (tts?.voice?.let { " · voice \"$it\"" } ?: " · default voice") + ". Replies are spoken by Voicebox, synced to the Core."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
             Text("Speech speed · ${"%.1f".format(speechRate)}×", style = MaterialTheme.typography.bodyLarge)
             Slider(
                 value = speechRate,

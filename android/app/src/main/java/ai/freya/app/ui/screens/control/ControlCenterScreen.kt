@@ -82,6 +82,7 @@ fun ControlCenterScreen(
 
     val keys by vm.keys.collectAsStateWithLifecycle()
     val model by vm.model.collectAsStateWithLifecycle()
+    val tts by vm.tts.collectAsStateWithLifecycle()
     val tools by vm.tools.collectAsStateWithLifecycle()
     val toolsError by vm.toolsError.collectAsStateWithLifecycle()
     val memoryCount by vm.memoryCount.collectAsStateWithLifecycle()
@@ -140,6 +141,15 @@ fun ControlCenterScreen(
                         keys?.llm?.set,
                     )
                     ProviderRow("Zep memory graph", "Used by simulations", keys?.zep?.set)
+                    ProviderRow(
+                        "Voicebox voice",
+                        when {
+                            tts?.configured != true -> "Local voice engine on your computer · VOICEBOX_URL"
+                            tts?.reachable == true -> "Reachable · " + (tts?.voice ?: "default voice")
+                            else -> "Configured, not reachable"
+                        },
+                        tts?.let { it.configured && it.reachable },
+                    )
                     Spacer(Modifier.height(Space.sm))
                     Text(
                         "Keys are stored encrypted on your FREYA backend, never on this phone. To route across many providers, point the OpenAI-compatible endpoint at your OmniRoute gateway (http://<computer-ip>:20128/v1).",

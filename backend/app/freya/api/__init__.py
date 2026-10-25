@@ -15,6 +15,7 @@ from .notifications import notifications_bp
 from .settings import settings_bp
 from .persona import persona_bp
 from ..keys.routes import keys_bp
+from .tts import tts_bp
 
 
 def register_freya_blueprints(app: Flask) -> None:
@@ -28,6 +29,7 @@ def register_freya_blueprints(app: Flask) -> None:
     app.register_blueprint(settings_bp, url_prefix="/api/freya/settings")
     app.register_blueprint(persona_bp, url_prefix="/api/freya/persona")
     app.register_blueprint(keys_bp, url_prefix="/api/freya/keys")
+    app.register_blueprint(tts_bp, url_prefix="/api/freya/tts")
 
 
 __all__ = ["register_freya_blueprints"]

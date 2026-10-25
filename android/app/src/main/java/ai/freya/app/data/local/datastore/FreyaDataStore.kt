@@ -52,6 +52,7 @@ class FreyaDataStore(private val context: Context) {
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
         val HAPTICS = booleanPreferencesKey("haptics")
         val SPEECH_RATE = floatPreferencesKey("speech_rate")
+        val VOICE_ENGINE = stringPreferencesKey("voice_engine")
         val USAGE_REQUESTS = longPreferencesKey("usage_requests")
         val USAGE_CHARS_OUT = longPreferencesKey("usage_chars_out")
         val USAGE_CHARS_IN = longPreferencesKey("usage_chars_in")
@@ -92,6 +93,9 @@ class FreyaDataStore(private val context: Context) {
     val haptics: Flow<Boolean> = context.freyaDataStore.data.map { it[Keys.HAPTICS] ?: true }
     val speechRate: Flow<Float> = context.freyaDataStore.data.map { it[Keys.SPEECH_RATE] ?: 1.0f }
 
+    /** "system" (phone TTS, default) | "voicebox" (Voicebox via the FREYA backend). */
+    val voiceEngine: Flow<String> = context.freyaDataStore.data.map { it[Keys.VOICE_ENGINE] ?: "system" }
+
     /** Usage measured by this app on this device (the backend does not report usage yet). */
     val usage: Flow<LocalUsage> = context.freyaDataStore.data.map {
         LocalUsage(
@@ -108,6 +112,7 @@ class FreyaDataStore(private val context: Context) {
     suspend fun setPresence(value: String) = context.freyaDataStore.edit { it[Keys.PRESENCE] = value }
     suspend fun setReduceMotion(value: Boolean) = context.freyaDataStore.edit { it[Keys.REDUCE_MOTION] = value }
     suspend fun setHaptics(value: Boolean) = context.freyaDataStore.edit { it[Keys.HAPTICS] = value }
+    suspend fun setVoiceEngine(value: String) = context.freyaDataStore.edit { it[Keys.VOICE_ENGINE] = value }
     suspend fun setSpeechRate(value: Float) = context.freyaDataStore.edit { it[Keys.SPEECH_RATE] = value.coerceIn(0.5f, 2.0f) }
 
     suspend fun recordRequest(charsSent: Int, charsReceived: Int, failed: Boolean) =

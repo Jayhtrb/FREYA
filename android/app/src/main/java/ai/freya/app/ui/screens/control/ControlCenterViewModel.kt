@@ -46,6 +46,9 @@ class ControlCenterViewModel(app: Application) : AndroidViewModel(app) {
     private val _keys = MutableStateFlow<KeysStatusDto?>(null)
     val keys: StateFlow<KeysStatusDto?> = _keys.asStateFlow()
 
+    private val _tts = MutableStateFlow<ai.freya.app.data.remote.dto.TtsStatusDto?>(null)
+    val tts: StateFlow<ai.freya.app.data.remote.dto.TtsStatusDto?> = _tts.asStateFlow()
+
     private val _model = MutableStateFlow<String?>(null)
     val model: StateFlow<String?> = _model.asStateFlow()
 
@@ -82,6 +85,7 @@ class ControlCenterViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refresh() {
         viewModelScope.launch { runCatching { keysRepo.status() }.onSuccess { _keys.value = it } }
+        viewModelScope.launch { runCatching { keysRepo.ttsStatus() }.onSuccess { _tts.value = it } }
         viewModelScope.launch {
             runCatching { settingsRepo.settings() }
                 .onSuccess { _model.value = it.model }

@@ -15,6 +15,11 @@ else:
     # 如果根目录没有 .env，尝试加载环境变量（用于生产环境）
     load_dotenv(override=True)
 
+# Local, git-ignored overrides (real keys and machine-specific URLs) win over .env.
+project_root_env_local = os.path.join(os.path.dirname(__file__), '../../.env.local')
+if os.path.exists(project_root_env_local):
+    load_dotenv(project_root_env_local, override=True)
+
 
 class Config:
     """Flask配置类"""
@@ -59,6 +64,16 @@ class Config:
     # 生产环境应设置为 "true" 启用按用户隔离。
     FREYA_REQUIRE_AUTH = os.environ.get('FREYA_REQUIRE_AUTH', 'false').lower() == 'true'
     
+    # ============ Voicebox (local voice engine for FREYA's spoken replies) ============
+    # Base URL of a Voicebox server you run (https://github.com/jamiepine/voicebox),
+    # e.g. http://127.0.0.1:17493. Empty = disabled; the app then uses the phone's voice.
+    VOICEBOX_URL = os.environ.get('VOICEBOX_URL', '').strip()
+    # Voice profile name or id inside Voicebox (empty = Voicebox's default voice).
+    VOICEBOX_VOICE = os.environ.get('VOICEBOX_VOICE', '').strip()
+    # Engine or OpenAI alias; "tts-1" means "whatever engine the profile uses".
+    VOICEBOX_MODEL = os.environ.get('VOICEBOX_MODEL', 'tts-1').strip() or 'tts-1'
+    VOICEBOX_TIMEOUT_SECONDS = float(os.environ.get('VOICEBOX_TIMEOUT_SECONDS', '45'))
+
     # LLM配置（统一使用OpenAI格式）
     LLM_API_KEY = os.environ.get('LLM_API_KEY')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')

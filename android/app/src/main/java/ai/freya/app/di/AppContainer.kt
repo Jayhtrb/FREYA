@@ -22,6 +22,12 @@ import ai.freya.app.voice.AndroidTextToSpeechProvider
 import ai.freya.app.voice.SpeechToTextProvider
 import ai.freya.app.voice.TextToSpeechProvider
 import ai.freya.app.voice.VoiceController
+import ai.freya.app.voice.VoiceboxTtsProvider
+import ai.freya.app.voice.SwitchingTtsProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import android.content.Context
 import androidx.room.Room
 
@@ -40,7 +46,7 @@ class AppContainer(context: Context) {
 
     // ---- Network ----
     val tokenStore = AuthTokenStore(dataStore)
-    private val okHttpClient =
+    val okHttpClient =
         NetworkModule.buildOkHttpClient { tokenStore.currentToken() }
     private val sseOkHttpClient =
         NetworkModule.buildSseOkHttpClient { tokenStore.currentToken() }
@@ -62,8 +68,18 @@ class AppContainer(context: Context) {
 
     // ---- Voice (system STT/TTS; they self-report availability and degrade to text-only) ----
     val sttProvider: SpeechToTextProvider = AndroidSpeechRecognizerProvider(appContext)
-    val ttsProvider: TextToSpeechProvider = AndroidTextToSpeechProvider(appContext)
+    private val systemTts = AndroidTextToSpeechProvider(appContext)
+    private val voiceboxTts = VoiceboxTtsProvider(appContext, okHttpClient, NetworkModule.defaultBaseUrl, fallback = systemTts)
+    val ttsSwitch = SwitchingTtsProvider(systemTts, voiceboxTts)
+    val ttsProvider: TextToSpeechProvider = ttsSwitch
     val voiceController = VoiceController(sttProvider, ttsProvider)
+
+    init {
+        // Route spoken replies to the engine chosen in Settings (phone voice or Voicebox).
+        CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
+            dataStore.voiceEngine.collect { ttsSwitch.useVoicebox = it == "voicebox" }
+        }
+    }
 
     // ---- Session (conversation, tasks, approvals; drives the FREYA Core on every screen) ----
     val session: FreyaSession by lazy {

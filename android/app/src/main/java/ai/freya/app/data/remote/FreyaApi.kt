@@ -111,6 +111,10 @@ interface FreyaApi {
     @GET("api/freya/persona")
     suspend fun persona(): ApiEnvelope
 
+    // ---- Voice output (Voicebox via backend) ----
+    @GET("api/freya/tts/status")
+    suspend fun ttsStatus(): ApiEnvelope
+
     // ---- API keys (BYOK) ----
     @GET("api/freya/keys")
     suspend fun keysStatus(): ApiEnvelope
