@@ -106,7 +106,8 @@ class CoreEngine(
         clock += dt
         state = input.state
         val target = StateStyle.forState(input.state)
-        val k = 1f - exp(-dt * 5f)
+        // Reduce-motion: state changes apply instantly (no fades), so the Core settles in one frame.
+        val k = if (reduceMotion) 1f else 1f - exp(-dt * 5f)
         energy += (target.energy - energy) * k
         turbulence += (target.turbulence - turbulence) * k
         strandAmp += (target.strandAmp - strandAmp) * k

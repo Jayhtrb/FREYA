@@ -115,10 +115,10 @@ internal fun DrawScope.drawFreyaCore(
 
 private fun DrawScope.drawNebula(e: CoreEngine, g: CoreGeometry, a: CoreAppearance, light: BlendMode, glow: Float) {
     val t = e.time
+    // Two soft haze blobs (kept small: large gradient fills are the costliest thing to rasterise).
     val blobs = arrayOf(
-        Triple(Offset(-0.38f + 0.05f * sin(t * 0.11f), -0.22f), e.accent, 1.15f),
-        Triple(Offset(0.42f, 0.18f + 0.05f * cos(t * 0.09f)), e.primary, 1.05f),
-        Triple(Offset(0.08f, 0.62f), a.palette.haze, 0.9f),
+        Triple(Offset(-0.36f + 0.05f * sin(t * 0.11f), -0.2f), e.accent, 0.9f),
+        Triple(Offset(0.4f, 0.22f + 0.05f * cos(t * 0.09f)), a.palette.haze, 0.85f),
     )
     blobs.forEach { (o, col, rf) ->
         val center = g.c + Offset(o.x * g.r, o.y * g.r)
@@ -130,8 +130,8 @@ private fun DrawScope.drawNebula(e: CoreEngine, g: CoreGeometry, a: CoreAppearan
     }
     // Soft stage light behind the orb.
     drawCircle(
-        brush = Brush.radialGradient(listOf(e.secondary.copy(alpha = 0.18f * glow + 0.15f * e.level), Color.Transparent), center = g.c, radius = g.r * 1.15f),
-        radius = g.r * 1.15f, center = g.c, blendMode = light,
+        brush = Brush.radialGradient(listOf(e.secondary.copy(alpha = 0.18f * glow + 0.15f * e.level), Color.Transparent), center = g.c, radius = g.r * 1.05f),
+        radius = g.r * 1.05f, center = g.c, blendMode = light,
     )
 }
 
