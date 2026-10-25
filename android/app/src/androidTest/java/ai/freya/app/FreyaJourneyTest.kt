@@ -37,6 +37,12 @@ class FreyaJourneyTest {
 
     @Test
     fun journey() {
+        // The Core animates continuously by design, so the UI is never "idle". Don't let every
+        // lookup wait the default 10 s for idleness (that's what made software-GPU runs crawl).
+        androidx.test.uiautomator.Configurator.getInstance().apply {
+            waitForIdleTimeout = 300
+            actionAcknowledgmentTimeout = 1000
+        }
         instrumentation.uiAutomation.grantRuntimePermission(pkg, Manifest.permission.RECORD_AUDIO)
         launch()
 
@@ -97,13 +103,14 @@ class FreyaJourneyTest {
             hideKeyboard()
             device.wait(Until.findObject(By.desc("Send")), timeout).click()
             device.findObject(By.desc("Show FREYA Core"))?.click()
-            if (device.wait(Until.hasObject(By.text("SPEAKING")), 15_000)) {
+            if (device.wait(Until.hasObject(By.text("SPEAKING")), 12_000)) {
                 Thread.sleep(700); shot("05b-speaking")
                 Thread.sleep(500); shot("05c-speaking-later")
             } else {
                 Log.i(TAG, "no SPEAKING state (no TTS engine on this image?)")
             }
-            device.wait(Until.hasObject(By.text("STANDING BY")), 30_000)
+            device.findObject(By.desc("Stop"))?.click() // don't wait out the whole reply
+            device.wait(Until.hasObject(By.text("STANDING BY")), 10_000)
             device.findObject(By.desc("Show conversation"))?.click()
         }
 
