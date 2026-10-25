@@ -76,7 +76,10 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          disable-animations: false
+          # Software-rendered emulators can't keep up with continuous animation and starve the
+          # accessibility thread UI Automator needs. "Remove animations" makes FREYA use its
+          # reduce-motion mode: every state stays distinct by colour and shape.
+          disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           working-directory: android
           script: |

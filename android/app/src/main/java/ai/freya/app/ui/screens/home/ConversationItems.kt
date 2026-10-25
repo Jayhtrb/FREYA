@@ -63,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
@@ -334,15 +335,14 @@ internal fun splitCode(text: String): List<Pair<Boolean, String>> {
 
 @Composable
 private fun TypingDots() {
-    val reduce = FreyaTheme.motion.reduceMotion
+    val style = MaterialTheme.typography.labelMedium.copy(fontFamily = FontFamily.Default)
+    if (FreyaTheme.motion.reduceMotion) {
+        Text("● ● ●", style = style, color = FreyaTheme.colors.violet, modifier = Modifier.alpha(0.7f))
+        return
+    }
     val t = rememberInfiniteTransition(label = "dots")
     val a by t.animateFloat(0.25f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "dotAlpha")
-    Text(
-        "● ● ●",
-        style = MaterialTheme.typography.labelMedium.copy(fontFamily = FontFamily.Default),
-        color = FreyaTheme.colors.violet,
-        modifier = Modifier.alpha(if (reduce) 0.7f else a),
-    )
+    Text("● ● ●", style = style, color = FreyaTheme.colors.violet, modifier = Modifier.graphicsLayer { alpha = a })
 }
 
 /** Compact glass card summarising the latest reply on the Core view. */

@@ -29,7 +29,7 @@ priority top to bottom:
 | PROCESSING | a chat request is in flight | 3 counter-rotating segmented arcs; before the first token they chase, then the pattern shifts with the **real streamed character count** |
 | SPEAKING | TTS is playing (between the engine's real `onStart` and `onDone`) | a ripple and a mouth pulse per **spoken word** (`onRangeStart`) |
 | ERROR | unresolved request/voice/tool error | static broken red ring; Retry / Check connection / Dismiss |
-| IDLE | nothing happening | slow breath at ~30 fps |
+| IDLE | nothing happening | slow breath at ~20 fps |
 
 **Lip/pulse sync.** Word timing comes from `UtteranceProgressListener.onRangeStart`. Engines that don't
 report ranges get a documented approximation: a cadence pulse (260 ms ÷ speech rate) that starts
@@ -79,7 +79,7 @@ a few dozen draw calls.
 ## Performance & accessibility notes
 
 - Per-frame values (clock, mic level, envelopes) live in state objects read only in the draw phase, so
-  animation never recomposes the screen. Calm states draw at ~30 fps; error and reduce-motion don't run a clock.
+  animation never recomposes the screen. Calm states draw at ~20 fps; error and reduce-motion don't run a clock.
 - Voice callbacks are marshalled to the main thread; network runs in coroutines; nothing blocks the UI thread.
 - Core and captions are live regions; every icon control has a content description; Talk exposes
   state description ("Listening"/"Not listening") and a semantic click action for TalkBack.

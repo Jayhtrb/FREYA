@@ -212,6 +212,7 @@ private fun AuthScaffold(
             signals = remember { CoreSignals(emptyFlow(), 0, false, false, 0, 0) },
             presence = Presence.CORE,
             modifier = Modifier.size(150.dp),
+            animate = false,
         )
         Spacer(Modifier.height(16.dp))
         Text(text = title, style = MaterialTheme.typography.headlineMedium)

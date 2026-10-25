@@ -70,9 +70,11 @@ fun FreyaCore(
     signals: CoreSignals,
     presence: Presence,
     modifier: Modifier = Modifier,
+    /** false for decorative placements (e.g. sign-in) where no live state is shown. */
+    animate: Boolean = true,
 ) {
     val colors = FreyaTheme.colors
-    val reduceMotion = FreyaTheme.motion.reduceMotion
+    val reduceMotion = FreyaTheme.motion.reduceMotion || !animate
 
     // ---- per-state targets, blended over Motion.state ms ----
     val primary by animateColorAsState(stateColor(state, colors), tween(Motion.state), label = "corePrimary")
@@ -96,7 +98,8 @@ fun FreyaCore(
     val runClock = !reduceMotion && state != CoreState.ERROR
     LaunchedEffect(runClock, calm) {
         if (!runClock) return@LaunchedEffect
-        val minFrame = if (calm) 33_000_000L else 0L
+        // Calm states only need a slow breath: ~20 fps is visually identical and cheaper.
+        val minFrame = if (calm) 50_000_000L else 0L
         var last = 0L
         while (true) {
             withFrameNanos { now ->
