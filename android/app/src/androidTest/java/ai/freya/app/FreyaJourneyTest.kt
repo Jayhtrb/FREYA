@@ -55,10 +55,10 @@ class FreyaJourneyTest {
         if (createLink != null) {
             createLink.click()
             device.wait(Until.hasObject(By.text("Display name")), timeout)
-            val fields = device.wait(Until.findObjects(By.clazz("android.widget.EditText")), timeout)
-            fields[0].text = "Justin"
-            fields[1].text = "journey+${System.currentTimeMillis()}@example.com"
-            fields[2].text = "FreyaJourney#2026"
+            device.wait(Until.findObjects(By.clazz("android.widget.EditText")), timeout)
+            setField(0, "Justin")
+            setField(1, "journey+${System.currentTimeMillis()}@example.com")
+            setField(2, "FreyaJourney#2026")
             hideKeyboard()
             // The register title is also "Create account"; the button label is the lower one.
             // (Compose exposes a button's label as a child text node of the clickable button.)
@@ -148,9 +148,8 @@ class FreyaJourneyTest {
             val run = findWithScroll(By.text("Run"))
             run!!.click()
             device.wait(Until.hasObject(By.text("Run simulation")), timeout)
-            val fields = device.findObjects(By.clazz("android.widget.EditText"))
-            fields.getOrNull(0)?.text = "demo_project"
-            fields.getOrNull(1)?.text = "Journey test — should be denied"
+            setField(0, "demo_project")
+            setField(1, "Journey test — should be denied")
             device.findObject(By.text("Review & approve")).click()
             device.wait(Until.hasObject(By.text("APPROVAL REQUIRED")), timeout)
             Thread.sleep(900)
@@ -213,6 +212,19 @@ class FreyaJourneyTest {
             wait.click()
             Thread.sleep(1500)
         }
+    }
+
+    /** Re-finds the field each time: typing recomposes the screen and stales old references. */
+    private fun setField(index: Int, value: String) {
+        repeat(3) {
+            try {
+                device.findObjects(By.clazz("android.widget.EditText"))[index].text = value
+                return
+            } catch (e: androidx.test.uiautomator.StaleObjectException) {
+                Thread.sleep(300)
+            }
+        }
+        device.findObjects(By.clazz("android.widget.EditText"))[index].text = value
     }
 
     private fun hideKeyboard() {

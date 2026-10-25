@@ -87,6 +87,29 @@ jobs:
             mkdir -p ../screenshots
             adb pull /sdcard/Android/data/ai.freya.app.debug/files/screenshots ../screenshots || true
             adb logcat -d -s FreyaJourney:V AndroidRuntime:E > ../journey-logcat.txt || true
+            # Animated pass: re-enable animations, relaunch the signed-in app, and grab frames with
+            # screencap (no accessibility needed), plus frame-time stats from gfxinfo.
+            adb shell settings put global animator_duration_scale 1 || true
+            adb shell settings put global transition_animation_scale 1 || true
+            adb shell settings put global window_animation_scale 1 || true
+            adb shell am force-stop ai.freya.app.debug || true
+            adb shell dumpsys gfxinfo ai.freya.app.debug reset > /dev/null || true
+            adb shell am start -n ai.freya.app.debug/ai.freya.app.MainActivity || true
+            sleep 8
+            mkdir -p ../screenshots/animated
+            adb exec-out screencap -p > ../screenshots/animated/idle-1.png || true
+            sleep 0.6
+            adb exec-out screencap -p > ../screenshots/animated/idle-2.png || true
+            sleep 0.6
+            adb exec-out screencap -p > ../screenshots/animated/idle-3.png || true
+            sleep 5
+            adb shell dumpsys gfxinfo ai.freya.app.debug > ../screenshots/animated/gfxinfo.txt || true
+            adb shell dumpsys meminfo ai.freya.app.debug > ../screenshots/animated/meminfo.txt || true
+            adb shell input keyevent KEYCODE_HOME || true
+            sleep 3
+            adb shell dumpsys gfxinfo ai.freya.app.debug reset > /dev/null || true
+            sleep 5
+            adb shell dumpsys gfxinfo ai.freya.app.debug > ../screenshots/animated/gfxinfo-backgrounded.txt || true
 
       - name: Upload screenshots and logs
         if: always()
