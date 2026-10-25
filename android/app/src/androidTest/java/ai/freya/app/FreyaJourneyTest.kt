@@ -58,8 +58,10 @@ class FreyaJourneyTest {
             fields[0].text = "Justin"
             fields[1].text = "journey+${System.currentTimeMillis()}@example.com"
             fields[2].text = "FreyaJourney#2026"
-            // The register screen title is also "Create account"; target the button.
-            device.findObject(By.text("Create account").clickable(true)).click()
+            hideKeyboard()
+            // The register title is also "Create account"; the button label is the lower one.
+            // (Compose exposes a button's label as a child text node of the clickable button.)
+            device.findObjects(By.text("Create account")).maxBy { it.visibleBounds.top }.click()
         }
 
         // ---- home (idle) ----
@@ -71,6 +73,7 @@ class FreyaJourneyTest {
         // ---- type a message; it must stream back from the backend ----
         val input = device.findObject(By.clazz("android.widget.EditText"))
         input.text = "hello FREYA"
+        hideKeyboard()
         device.wait(Until.findObject(By.desc("Send")), timeout).click()
         Thread.sleep(250)
         shot("02-processing")
@@ -117,27 +120,27 @@ class FreyaJourneyTest {
         }
 
         step("approval") {
-            val run = findWithScroll(By.text("Run").clickable(true))
+            val run = findWithScroll(By.text("Run"))
             run!!.click()
             device.wait(Until.hasObject(By.text("Run simulation")), timeout)
             val fields = device.findObjects(By.clazz("android.widget.EditText"))
             fields.getOrNull(0)?.text = "demo_project"
             fields.getOrNull(1)?.text = "Journey test — should be denied"
-            device.findObject(By.text("Review & approve").clickable(true)).click()
+            device.findObject(By.text("Review & approve")).click()
             device.wait(Until.hasObject(By.text("APPROVAL REQUIRED")), timeout)
             Thread.sleep(900)
             shot("10-awaiting-approval")
-            device.findObject(By.text("Deny").clickable(true)).click()
+            device.findObject(By.text("Deny")).click()
             Thread.sleep(800)
         }
 
         step("read-only-task") {
-            val runs = device.findObjects(By.text("Run").clickable(true))
+            val runs = device.findObjects(By.text("Run"))
             // Second tool in the backend registry is inspect_graph (read-only).
             runs.getOrNull(1)?.click() ?: return@step
-            device.wait(Until.hasObject(By.text("Run now").clickable(true)), timeout)
+            device.wait(Until.hasObject(By.text("Run now")), timeout)
             device.findObjects(By.clazz("android.widget.EditText")).firstOrNull()?.text = "demo_graph"
-            device.findObject(By.text("Run now").clickable(true)).click()
+            device.findObject(By.text("Run now")).click()
             Thread.sleep(400)
             shot("11-task-running")
             Thread.sleep(3000)
@@ -174,6 +177,16 @@ class FreyaJourneyTest {
         }
         context.startActivity(intent)
         device.wait(Until.hasObject(By.pkg(pkg).depth(0)), timeout)
+    }
+
+    private fun hideKeyboard() {
+        val imeShown = instrumentation.uiAutomation.windows.any {
+            it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD
+        }
+        if (imeShown) {
+            device.pressBack()
+            Thread.sleep(400)
+        }
     }
 
     private fun scroll() {
