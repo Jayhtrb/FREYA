@@ -1,0 +1,101 @@
+name: Android device journey (emulator + mock backend)
+
+# Runs the real app on an Android emulator against the real FREYA backend in
+# assistant-only mode with the deterministic mock provider (no API keys, no cost).
+# Produces screenshots of each Core state as a workflow artifact.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/**']
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-device-check.yml'
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-device-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Start FREYA backend (assistant-only, mock provider)
+        working-directory: backend
+        env:
+          FREYA_JWT_SECRET: ci-only-secret-for-emulator-journey-0123456789
+          FREYA_RATE_LIMIT_PER_MINUTE: '200'
+          FREYA_DB_PATH: ${{ runner.temp }}/freya-ci.sqlite3
+        run: |
+          python -m pip install --upgrade uv
+          uv sync
+          nohup uv run python run_freya.py > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:5001/health; then echo; echo "backend up"; exit 0; fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/backend.log"; exit 1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build app and test APKs
+        working-directory: android
+        run: gradle :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon
+
+      - name: Run journey on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          working-directory: android
+          script: |
+            gradle :app:connectedDebugAndroidTest --no-daemon -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true || echo "TEST_FAILED" > ../journey-failed
+            mkdir -p ../screenshots
+            adb pull /sdcard/Android/data/ai.freya.app.debug/files/screenshots ../screenshots || true
+            adb logcat -d -s FreyaJourney:V AndroidRuntime:E > ../journey-logcat.txt || true
+
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: freya-device-journey
+          path: |
+            screenshots/
+            journey-logcat.txt
+            android/app/build/reports/androidTests/
+            ${{ runner.temp }}/backend.log
+          if-no-files-found: warn
+
+      - name: Fail if the journey failed
+        run: test ! -f journey-failed

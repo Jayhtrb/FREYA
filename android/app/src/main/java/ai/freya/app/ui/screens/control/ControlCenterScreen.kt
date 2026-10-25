@@ -419,7 +419,7 @@ private fun ToolFormDialog(
                     .onSuccess(onRun)
                     .onFailure { error = it.message }
             }) {
-                Text(if (info.risk == ToolRisk.READ_ONLY) "Run" else "Review & approve")
+                Text(if (info.risk == ToolRisk.READ_ONLY) "Run now" else "Review & approve")
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
