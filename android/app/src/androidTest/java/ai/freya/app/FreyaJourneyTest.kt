@@ -40,6 +40,14 @@ class FreyaJourneyTest {
         instrumentation.uiAutomation.grantRuntimePermission(pkg, Manifest.permission.RECORD_AUDIO)
         launch()
 
+        // Diagnostics: what the accessibility layer exposes right after launch.
+        Thread.sleep(3000)
+        val ua = instrumentation.uiAutomation
+        Log.i(TAG, "active root pkg=${ua.rootInActiveWindow?.packageName} children=${ua.rootInActiveWindow?.childCount}")
+        ua.windows.forEach { w -> Log.i(TAG, "window type=${w.type} layer=${w.layer} active=${w.isActive} title=${w.title} root=${w.root?.packageName}") }
+        runCatching { device.dumpWindowHierarchy(File(outDir, "hierarchy-launch.xml")) }
+            .onFailure { Log.w(TAG, "dump failed: ${it.message}") }
+
         // ---- sign up (fresh install) ----
         val createLink = device.wait(Until.findObject(By.textContains("Create an account")), timeout)
         shot("00-sign-in")
