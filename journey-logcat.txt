@@ -1,0 +1,21 @@
+--------- beginning of main
+10-26 18:13:35.177  4684  4724 I FreyaJourney: active root pkg=ai.freya.app.debug children=1
+10-26 18:13:35.182  4684  4724 I FreyaJourney: window type=3 layer=1 active=false title=null root=com.android.systemui
+10-26 18:13:35.190  4684  4724 I FreyaJourney: window type=1 layer=0 active=true title=FREYA root=ai.freya.app.debug
+10-26 18:13:36.212  4684  4724 I FreyaJourney: screenshot 00-sign-in -> true
+10-26 18:13:44.923  4684  4724 I FreyaJourney: screenshot 01-home-idle -> true
+10-26 18:13:44.960  4684  4724 I FreyaJourney: core bounds=Rect(0, 202 - 1080, 1623) root=Rect(0, 0 - 1080, 2400) navTop=2261 fraction=0.63
+10-26 18:13:47.222  4684  4724 I FreyaJourney: screenshot 02-processing -> true
+10-26 18:13:48.519  4684  4724 I FreyaJourney: screenshot 03-conversation -> true
+10-26 18:14:21.751  4684  4724 I FreyaJourney: no SPEAKING state (no TTS engine on this image?)
+10-26 18:14:22.945  4684  4724 I FreyaJourney: screenshot 04-technical-details -> true
+10-26 18:14:22.960  4684  4724 W FreyaJourney: step 'core-view' skipped: Attempt to invoke virtual method 'void androidx.test.uiautomator.UiObject2.click()' on a null object reference
+10-26 18:14:23.241  4684  4724 I FreyaJourney: screenshot zz-failed-core-view -> true
+10-26 18:14:41.365  4684  4724 I FreyaJourney: screenshot 07-control-center -> true
+10-26 18:14:44.344  4684  4724 I FreyaJourney: screenshot 08-control-integrations -> true
+10-26 18:14:46.977  4684  4724 I FreyaJourney: screenshot 09-control-tasks -> true
+10-26 18:15:00.922  4684  4724 W FreyaJourney: step 'approval' skipped: null
+10-26 18:15:01.230  4684  4724 I FreyaJourney: screenshot zz-failed-approval -> true
+10-26 18:15:03.109  4684  4724 I FreyaJourney: screenshot 13-home-after-task -> true
+10-26 18:15:03.540  4684  4724 W FreyaJourney: step 'light-theme' skipped: null
+10-26 18:15:03.914  4684  4724 I FreyaJourney: screenshot zz-failed-light-theme -> true

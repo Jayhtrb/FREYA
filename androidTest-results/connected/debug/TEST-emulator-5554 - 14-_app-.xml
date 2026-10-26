@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="ai.freya.app.FreyaJourneyTest" tests="1" failures="0" errors="0" skipped="0" time="96.105" timestamp="2026-10-26T18:15:05" hostname="localhost">
+  <properties>
+    <property name="device" value="emulator-5554 - 14" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="journey" classname="ai.freya.app.FreyaJourneyTest" time="94.379" />
+</testsuite>
