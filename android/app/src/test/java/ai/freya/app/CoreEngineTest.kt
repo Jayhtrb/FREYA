@@ -110,10 +110,14 @@ class CoreEngineTest {
     }
 
     @Test fun taskSendsParticlesIntoAnOrbitStream() {
-        val e = CoreEngine()
-        run(e, CoreInput(CoreState.TOOL_EXECUTION), 3f)
-        val outside = (0 until e.particleCount).count { hypot(e.sx[it], e.sy[it]) > 1.15f }
-        assertTrue("outside $outside", outside > e.particleCount / 20)
+        // The stream particles (kind 2) leave the orb for a wider orbit; the rest stay put.
+        fun streamSpread(e: CoreEngine) = (0 until e.particleCount).filter { e.kind[it] == 2.toByte() }
+            .map { hypot(e.sx[it], e.sy[it]) }.average()
+        val idle = CoreEngine()
+        val task = CoreEngine()
+        run(idle, CoreInput(CoreState.IDLE), 3f)
+        run(task, CoreInput(CoreState.TOOL_EXECUTION), 3f)
+        assertTrue("task ${streamSpread(task)} idle ${streamSpread(idle)}", streamSpread(task) > streamSpread(idle) * 1.15)
     }
 
     @Test fun reduceMotionFreezesAmbientTimeButNotState() {
