@@ -143,6 +143,7 @@ fun HomeScreen(
     val chars by vm.receivedChars.collectAsStateWithLifecycle()
     val ack by vm.acknowledgeTick.collectAsStateWithLifecycle()
     val partial by vm.partial.collectAsStateWithLifecycle()
+    val notice by vm.notice.collectAsStateWithLifecycle()
     val wordTick by vm.wordTick.collectAsStateWithLifecycle()
     val outputMeasured by vm.outputMeasured.collectAsStateWithLifecycle()
     val presence by vm.presence.collectAsStateWithLifecycle()
@@ -273,7 +274,7 @@ fun HomeScreen(
                         )
                         StatusBlock(
                             state = state,
-                            caption = captionFor(state, partial, chars, activeTool, error, measured),
+                            caption = if (state == CoreState.IDLE && notice != null) notice!! else captionFor(state, partial, chars, activeTool, error, measured),
                             audioActive = audioActive,
                             audioLevel = audioLevel,
                             latest = messages.lastOrNull { !it.isUser },

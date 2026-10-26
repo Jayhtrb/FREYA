@@ -38,6 +38,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     val activeModel = session.activeModel
 
+    val notice = voice.notice
     val partial = voice.partial
     val inputLevel = voice.inputLevel
     val outputLevel = voice.outputLevel

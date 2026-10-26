@@ -187,8 +187,8 @@ class FreyaJourneyTest {
         // ---- appearance: light theme + abstract core ----
         step("light-theme") {
             device.findObject(By.text("SETTINGS")).click()
-            device.wait(Until.hasObject(By.text("Appearance")), timeout)
-            device.findObject(By.text("Light"))?.click()
+            repeat(4) { device.findObject(By.scrollable(true))?.scroll(Direction.UP, 0.9f) }
+            findWithScroll(By.text("Light"))?.click()
             device.findObject(By.text("Abstract core"))?.click()
             Thread.sleep(800)
             shot("14-settings-light")

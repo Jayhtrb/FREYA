@@ -288,7 +288,8 @@ class FreyaSession(
                     _backendReachable.value = (it as? FreyaException)?.code != null
                     _providerConfigured.value = null
                 }
-            if (_activeModel.value == null) {
+            // The saved model setting only means something when a provider is configured.
+            if (_activeModel.value == null && _providerConfigured.value == true) {
                 runCatching { settingsRepo.settings().model }.getOrNull()?.let { _activeModel.value = it }
             }
         }

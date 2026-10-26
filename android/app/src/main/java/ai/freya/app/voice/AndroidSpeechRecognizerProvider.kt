@@ -66,7 +66,7 @@ class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
                 val text = results
                     ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()
-                if (!text.isNullOrBlank()) resultCb(text) else errorCb("I didn't catch that. Please try again.")
+                if (!text.isNullOrBlank()) resultCb(text) else errorCb(NO_SPEECH)
             }
 
             override fun onError(error: Int) {
@@ -103,13 +103,16 @@ class AndroidSpeechRecognizerProvider(context: Context) : SpeechToTextProvider {
         SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission is required."
         SpeechRecognizer.ERROR_NETWORK -> "The speech service had a network error."
         SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Speech recognition timed out."
-        SpeechRecognizer.ERROR_NO_MATCH -> "I didn't catch that. Please try again."
+        SpeechRecognizer.ERROR_NO_MATCH -> NO_SPEECH
         SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "The recognizer is busy."
-        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech detected."
+        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> NO_SPEECH
         else -> "Speech recognition failed."
     }
 
     companion object {
+        /** A quiet listen is not a failure; the controller treats this as a notice, not an error. */
+        const val NO_SPEECH = "I didn't hear anything — tap the mic to try again."
+
         /** Android reports roughly -2..10 dB; map to 0..1 with a little headroom. */
         fun normaliseRms(rmsdB: Float): Float = ((rmsdB + 2f) / 12f).coerceIn(0f, 1f)
     }

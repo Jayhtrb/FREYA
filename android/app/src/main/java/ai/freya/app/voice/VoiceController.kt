@@ -60,6 +60,10 @@ class VoiceController(
     private val _spokenUpTo = MutableStateFlow(0)
     val spokenUpTo: StateFlow<Int> = _spokenUpTo.asStateFlow()
 
+    /** Benign, transient message (e.g. nothing was heard). Never puts the Core into ERROR. */
+    private val _notice = MutableStateFlow<String?>(null)
+    val notice: StateFlow<String?> = _notice.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -70,11 +74,13 @@ class VoiceController(
 
     fun clearError() {
         _error.value = null
+        _notice.value = null
     }
 
     fun startListening() {
         if (_state.value == VoiceState.SPEAKING) stopSpeaking()
         _error.value = null
+        _notice.value = null
         _partial.value = ""
         _state.value = VoiceState.LISTENING
         sttProvider.startListening(
@@ -87,8 +93,12 @@ class VoiceController(
             },
             onError = { message ->
                 _inputLevel.value = 0f
-                // A user-initiated cancel is not an error worth surfacing.
-                if (_state.value == VoiceState.LISTENING) _error.value = message
+                // A user-initiated cancel is not an error worth surfacing, and hearing nothing
+                // is a notice, not a failure.
+                if (_state.value == VoiceState.LISTENING) {
+                    if (message == AndroidSpeechRecognizerProvider.NO_SPEECH) _notice.value = message
+                    else _error.value = message
+                }
                 _state.value = VoiceState.IDLE
             },
             onLevel = { _inputLevel.value = it },
