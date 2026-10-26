@@ -232,7 +232,8 @@ fun HomeScreen(
             // The waveform owns the whole upper region (≈60% of the usable screen on a phone):
             // the wordmark and status sit on top of it, the controls below it.
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                AnimatedVisibility(
+                // Fully qualified: inside Box-in-Column the ColumnScope overload would be picked.
+                androidx.compose.animation.AnimatedVisibility(
                     visible = !conversationMode,
                     enter = fadeIn(tween(Motion.layout)),
                     exit = fadeOut(tween(Motion.state)),
