@@ -14,7 +14,7 @@ data class CoreAppearance(
     /** Luminous particles forming the 3D energy orb. */
     val particleCount: Int = 2400,
     /** Flowing light filaments sweeping over the orb surface. */
-    val filamentCount: Int = 7,
+    val filamentCount: Int = 5,
     /** Horizontal energy-field waves; one per frequency band (0 = no field, e.g. compact). */
     val waveCount: Int = 8,
     /** Particles streaming outward along the horizontal field. */
@@ -30,7 +30,7 @@ data class CoreAppearance(
     companion object {
         val Default = CoreAppearance()
         /** Small placements (header badge, sign-in): the orb only, fewer particles, no field. */
-        val Compact = CoreAppearance(particleCount = 420, filamentCount = 4, waveCount = 0, streamCount = 0)
+        val Compact = CoreAppearance(particleCount = 420, filamentCount = 3, waveCount = 0, streamCount = 0)
     }
 }
 

@@ -102,7 +102,7 @@ fun DrawScope.drawFreyaCore(e: CoreEngine, cache: CoreCache, additive: Boolean, 
     val haloR = r * (if (compact) 1.5f else 2.2f)
     drawCircle(
         Brush.radialGradient(
-            0f to e.primary.copy(alpha = (0.24f * glow * (0.8f + lv * 0.7f + e.ack * 0.5f)).coerceAtMost(0.6f)),
+            0f to e.primary.copy(alpha = (0.30f * glow * (0.8f + lv * 0.7f + e.ack * 0.5f)).coerceAtMost(0.6f)),
             0.45f to e.accent.copy(alpha = 0.07f * glow),
             1f to Color.Transparent,
             center = c, radius = haloR,
@@ -207,14 +207,14 @@ fun DrawScope.drawFreyaCore(e: CoreEngine, cache: CoreCache, additive: Boolean, 
             }
         }
         fun drawFilaments(front: Boolean) {
-            val depthK = if (front) 1f else 0.38f
+            val depthK = if (front) 0.62f else 0.22f
             for (t in 0 until CoreCache.TAPER) {
                 val bucket = t + (if (front) CoreCache.TAPER else 0)
                 val n = filN[bucket]
                 val a = TAPER_ALPHA[t] * depthK * glow
                 val col = lerp(e.secondary, e.hot, t / (CoreCache.TAPER - 1f) * 0.7f)
-                batch(cache.fil[bucket], n, col, a * 0.16f, unit * (4f + t * 1.5f), points = false)
-                batch(cache.fil[bucket], n, col, a, unit * (0.8f + t * 0.35f), points = false)
+                batch(cache.fil[bucket], n, col, a * 0.12f, unit * (3f + t), points = false)
+                batch(cache.fil[bucket], n, col, a, unit * (0.6f + t * 0.25f), points = false)
             }
         }
         drawFilaments(front = false)
@@ -241,8 +241,12 @@ fun DrawScope.drawFreyaCore(e: CoreEngine, cache: CoreCache, additive: Boolean, 
             var pn = ptsN[bucket]
             pa[pn++] = x; pa[pn++] = y
             ptsN[bucket] = pn
-            val dx = (e.psx[i] - e.sx[i]) * r * trailK
-            val dy = (e.psy[i] - e.sy[i]) * r * trailK
+            var dx = (e.psx[i] - e.sx[i]) * r * trailK
+            var dy = (e.psy[i] - e.sy[i]) * r * trailK
+            // Cap trail length so slow frames (or a dropped frame) never smear into streaks.
+            val len = abs(dx) + abs(dy)
+            val maxLen = r * 0.07f
+            if (len > maxLen) { dx *= maxLen / len; dy *= maxLen / len }
             if (abs(dx) + abs(dy) > 0.6f) {
                 val ta = trails[bucket]
                 var tn = trailsN[bucket]
@@ -254,13 +258,13 @@ fun DrawScope.drawFreyaCore(e: CoreEngine, cache: CoreCache, additive: Boolean, 
             batch(trails[bucket], trailsN[bucket], color, alpha * 0.45f, size * 0.55f, points = false)
             batch(pts[bucket], ptsN[bucket], color, alpha, size, points = true)
         }
-        particles(CoreCache.BACK, e.primary, 0.34f * glow, unit * 1.0f)
+        particles(CoreCache.BACK, e.primary, 0.42f * glow, unit * 1.0f)
         particles(CoreCache.MID, lerp(e.primary, e.secondary, 0.5f), 0.55f * glow, unit * 1.35f)
 
         // ---- 5. nucleus: volumetric light from inside the orb ----
         paint.xfermode = null
         val nucR = r * 0.78f
-        val nucA = (0.30f * glow * (0.6f + lv * 0.9f + e.ack * 0.7f)).coerceAtMost(0.75f)
+        val nucA = (0.42f * glow * (0.6f + lv * 0.9f + e.ack * 0.7f)).coerceAtMost(0.75f)
         drawCircle(
             Brush.radialGradient(
                 0f to e.hot.copy(alpha = nucA),
@@ -272,12 +276,12 @@ fun DrawScope.drawFreyaCore(e: CoreEngine, cache: CoreCache, additive: Boolean, 
         )
         paint.xfermode = if (additive) cache.additive else null
 
-        particles(CoreCache.FRONT, e.secondary, 0.80f * glow, unit * 1.75f)
+        particles(CoreCache.FRONT, e.secondary, 0.92f * glow, unit * 1.75f)
         particles(CoreCache.HOT, e.hot, 0.95f * glow, unit * 2.1f)
         particles(CoreCache.ACCENT, e.accent, 0.75f * glow, unit * 1.6f)
 
         drawFilaments(front = true)
-        batch(cache.heads, headN, e.hot, 0.9f * glow, unit * 3.2f, points = true)
+        batch(cache.heads, headN, e.hot, 0.7f * glow, unit * 2.4f, points = true)
         paint.xfermode = null
     }
 }
