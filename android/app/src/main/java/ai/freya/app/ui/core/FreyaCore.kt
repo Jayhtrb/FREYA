@@ -11,6 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -107,10 +109,15 @@ fun FreyaCore(
         }
     }
     Canvas(
-        modifier.semantics {
-            contentDescription = "FREYA: ${state.label}"
-            liveRegion = LiveRegionMode.Polite
-        },
+        modifier
+            // Cache the Core in its own GPU layer: other UI changes (cursor blink, ripples, text)
+            // re-composite the cached texture instead of re-rasterising every glow and particle.
+            // The layer is re-rendered only when the engine advances (frame counter below).
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .semantics {
+                contentDescription = "FREYA: ${state.label}"
+                liveRegion = LiveRegionMode.Polite
+            },
     ) {
         frame.intValue // read in draw: each engine step invalidates only this draw pass
         drawFreyaCore(engine, cache, resolved, presence, additive = isDark, compact = compact)
