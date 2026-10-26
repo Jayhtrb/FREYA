@@ -201,6 +201,9 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+            Text("Server", style = MaterialTheme.typography.titleMedium)
+            ai.freya.app.ui.screens.auth.ServerAddressRow()
+            Spacer(Modifier.height(16.dp))
             Text("Appearance", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             ChoiceRow(

@@ -47,6 +47,7 @@ class FreyaDataStore(private val context: Context) {
         val VOICE = stringPreferencesKey("voice")
         val VOICE_ENABLED = booleanPreferencesKey("voice_enabled")
         val HANDS_FREE = booleanPreferencesKey("hands_free")
+        val SERVER_URL = stringPreferencesKey("server_url")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
         val HAPTICS = booleanPreferencesKey("haptics")
@@ -102,6 +103,12 @@ class FreyaDataStore(private val context: Context) {
             feedbackUp = it[Keys.FEEDBACK_UP] ?: 0L,
             feedbackDown = it[Keys.FEEDBACK_DOWN] ?: 0L,
         )
+    }
+
+    /** Backend address chosen in the app; null = the build-time default. */
+    val serverUrl: Flow<String?> = context.freyaDataStore.data.map { it[Keys.SERVER_URL]?.takeIf { s -> s.isNotBlank() } }
+    suspend fun setServerUrl(value: String?) = context.freyaDataStore.edit {
+        if (value.isNullOrBlank()) it.remove(Keys.SERVER_URL) else it[Keys.SERVER_URL] = value
     }
 
     suspend fun setThemeMode(value: String) = context.freyaDataStore.edit { it[Keys.THEME_MODE] = value }

@@ -28,6 +28,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import ai.freya.app.data.remote.ServerAddress
 import android.content.Context
 import androidx.room.Room
 
@@ -45,6 +48,10 @@ class AppContainer(context: Context) {
         Room.databaseBuilder(appContext, FreyaDatabase::class.java, "freya.db").build()
 
     // ---- Network ----
+    init {
+        // Apply the saved server address before any request can go out (one small DataStore read).
+        ServerAddress.set(runBlocking { dataStore.serverUrl.first() })
+    }
     val tokenStore = AuthTokenStore(dataStore)
     val okHttpClient =
         NetworkModule.buildOkHttpClient { tokenStore.currentToken() }
@@ -78,6 +85,9 @@ class AppContainer(context: Context) {
         // Route spoken replies to the engine chosen in Settings (phone voice or Voicebox).
         CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
             dataStore.voiceEngine.collect { ttsSwitch.useVoicebox = it == "voicebox" }
+        }
+        CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
+            dataStore.serverUrl.collect { ServerAddress.set(it) }
         }
     }
 

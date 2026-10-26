@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 
-/** Builds the OkHttp/Retrofit stack. Base URL is fixed at build time (see [defaultBaseUrl]). */
+/** Builds the OkHttp/Retrofit stack. Default URL is set at build time; [ServerAddress] can override it at runtime. */
 object NetworkModule {
 
     val defaultBaseUrl: String = BuildConfig.API_BASE_URL
@@ -18,6 +18,7 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BASIC
         }
         return OkHttpClient.Builder()
+            .addInterceptor(ServerAddress.Rewrite)
             .addInterceptor(AuthInterceptor(authToken))
             .addInterceptor(logging)
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -29,6 +30,7 @@ object NetworkModule {
     /** SSE streams must not time out while idle; use a dedicated client for them. */
     fun buildSseOkHttpClient(authToken: () -> String?): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(ServerAddress.Rewrite)
             .addInterceptor(AuthInterceptor(authToken))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(0, TimeUnit.MILLISECONDS)

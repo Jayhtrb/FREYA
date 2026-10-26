@@ -41,7 +41,7 @@ class ControlCenterViewModel(app: Application) : AndroidViewModel(app) {
     private val dataStore = container.dataStore
     private val voice = container.voiceController
 
-    val baseUrl: String = NetworkModule.defaultBaseUrl
+    val baseUrl: String get() = ai.freya.app.data.remote.ServerAddress.current
 
     private val _keys = MutableStateFlow<KeysStatusDto?>(null)
     val keys: StateFlow<KeysStatusDto?> = _keys.asStateFlow()
