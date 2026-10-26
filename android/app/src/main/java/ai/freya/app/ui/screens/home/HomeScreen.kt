@@ -14,7 +14,6 @@ import ai.freya.app.ui.components.GlassPanel
 import ai.freya.app.ui.components.rememberFreyaHaptics
 import ai.freya.app.ui.core.CoreAppearance
 import ai.freya.app.ui.core.FreyaCore
-import ai.freya.app.ui.core.Presence
 import ai.freya.app.ui.theme.DisplayFamily
 import ai.freya.app.ui.theme.FreyaTheme
 import ai.freya.app.ui.theme.Motion
@@ -146,7 +145,6 @@ fun HomeScreen(
     val notice by vm.notice.collectAsStateWithLifecycle()
     val wordTick by vm.wordTick.collectAsStateWithLifecycle()
     val outputMeasured by vm.outputMeasured.collectAsStateWithLifecycle()
-    val presence by vm.presence.collectAsStateWithLifecycle()
     val hapticsOn by vm.haptics.collectAsStateWithLifecycle()
     val suggestions by vm.suggestions.collectAsStateWithLifecycle()
     val provider by vm.providerConfigured.collectAsStateWithLifecycle()
@@ -201,8 +199,11 @@ fun HomeScreen(
             else -> 0f
         }
     }
-    val audioActive = state == CoreState.LISTENING || state == CoreState.SPEAKING
     val measured = state == CoreState.LISTENING || (state == CoreState.SPEAKING && outputMeasured)
+    // Real spectrum of FREYA's voice, only while measured playback is running.
+    val audioBands: () -> FloatArray? = {
+        if (vm.coreState.value == CoreState.SPEAKING && vm.outputMeasured.value) vm.outputBands else null
+    }
 
     val actions = MessageActions(
         onCopy = {
@@ -228,76 +229,86 @@ fun HomeScreen(
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().imePadding()) {
-            HomeHeader(
-                conversationMode = conversationMode,
-                connection = when {
-                    reachable == false -> Connection.OFFLINE
-                    provider == true -> Connection.ONLINE
-                    reachable == true -> Connection.NO_PROVIDER
-                    else -> Connection.CHECKING
-                },
-                model = model,
-                miniCore = {
+            // The waveform owns the whole upper region (≈60% of the usable screen on a phone):
+            // the wordmark and status sit on top of it, the controls below it.
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                AnimatedVisibility(
+                    visible = !conversationMode,
+                    enter = fadeIn(tween(Motion.layout)),
+                    exit = fadeOut(tween(Motion.state)),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
                     FreyaCore(
-                        state = state, audioLevel = audioLevel, audioMeasured = measured, wordTick = wordTick,
-                        receivedChars = chars, acknowledgeTick = ack, presence = Presence.CORE,
-                        appearance = CoreAppearance.Compact, compact = true, modifier = Modifier.size(40.dp),
+                        state = state,
+                        audioLevel = audioLevel,
+                        audioMeasured = measured,
+                        audioBands = audioBands,
+                        wordTick = wordTick,
+                        receivedChars = chars,
+                        acknowledgeTick = ack,
+                        modifier = Modifier.fillMaxSize().padding(top = 28.dp),
                     )
-                },
-                onToggleConversation = { conversationMode = !conversationMode },
-                onNewConversation = {
-                    vm.newConversation()
-                    scope.launch { snackbar.showSnackbar("Started a new conversation") }
-                },
-                onSearch = onNavigateToSearch,
-                onSettings = onOpenSettings,
-            )
+                }
+                Column(Modifier.fillMaxSize()) {
+                    HomeHeader(
+                        conversationMode = conversationMode,
+                        connection = when {
+                            reachable == false -> Connection.OFFLINE
+                            provider == true -> Connection.ONLINE
+                            reachable == true -> Connection.NO_PROVIDER
+                            else -> Connection.CHECKING
+                        },
+                        model = model,
+                        miniCore = {
+                            FreyaCore(
+                                state = state, audioLevel = audioLevel, audioMeasured = measured, audioBands = audioBands,
+                                wordTick = wordTick, receivedChars = chars, acknowledgeTick = ack,
+                                appearance = CoreAppearance.Compact, compact = true, modifier = Modifier.size(40.dp),
+                            )
+                        },
+                        onToggleConversation = { conversationMode = !conversationMode },
+                        onNewConversation = {
+                            vm.newConversation()
+                            scope.launch { snackbar.showSnackbar("Started a new conversation") }
+                        },
+                        onSearch = onNavigateToSearch,
+                        onSettings = onOpenSettings,
+                    )
 
-            AnimatedContent(
-                targetState = conversationMode,
-                transitionSpec = { fadeIn(tween(Motion.layout)) togetherWith fadeOut(tween(Motion.state)) },
-                modifier = Modifier.weight(1f),
-                label = "homeMode",
-            ) { convo ->
-                if (!convo) {
-                    Column(Modifier.fillMaxSize()) {
-                        // ---- the dominant visualization: full width, responsive ----
-                        FreyaCore(
-                            state = state,
-                            audioLevel = audioLevel,
-                            audioMeasured = measured,
-                            wordTick = wordTick,
-                            receivedChars = chars,
-                            acknowledgeTick = ack,
-                            presence = presence,
-                            modifier = Modifier.weight(1f).fillMaxWidth(),
-                        )
-                        StatusBlock(
-                            state = state,
-                            caption = if (state == CoreState.IDLE && notice != null) notice!! else captionFor(state, partial, chars, activeTool, error, measured),
-                            audioActive = audioActive,
-                            audioLevel = audioLevel,
-                            latest = messages.lastOrNull { !it.isUser },
-                            onOpenConversation = { conversationMode = true },
-                            canRetry = messages.lastOrNull { !it.isUser }
-                                ?.let { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT } == true,
-                            onRetry = {
-                                messages.lastOrNull { !it.isUser }
-                                    ?.takeIf { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT }
-                                    ?.let { vm.retry(it.id) }
-                            },
-                            onCheckConnection = { vm.refreshStatus(); onOpenControlCenter() },
-                            onDismissError = vm::dismissError,
-                        )
+                    AnimatedContent(
+                        targetState = conversationMode,
+                        transitionSpec = { fadeIn(tween(Motion.layout)) togetherWith fadeOut(tween(Motion.state)) },
+                        modifier = Modifier.weight(1f),
+                        label = "homeMode",
+                    ) { convo ->
+                        if (!convo) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                                StatusBlock(
+                                    state = state,
+                                    caption = if (state == CoreState.IDLE && notice != null) notice!! else captionFor(state, partial, chars, activeTool, error, measured),
+                                    latest = messages.lastOrNull { !it.isUser },
+                                    onOpenConversation = { conversationMode = true },
+                                    canRetry = messages.lastOrNull { !it.isUser }
+                                        ?.let { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT } == true,
+                                    onRetry = {
+                                        messages.lastOrNull { !it.isUser }
+                                            ?.takeIf { it.status == MessageStatus.FAILED && it.kind == MessageKind.TEXT }
+                                            ?.let { vm.retry(it.id) }
+                                    },
+                                    onCheckConnection = { vm.refreshStatus(); onOpenControlCenter() },
+                                    onDismissError = vm::dismissError,
+                                )
+                            }
+                        } else {
+                            ConversationView(
+                                messages = messages,
+                                actions = actions,
+                                showGreeting = vm.showGreeting,
+                                greeting = vm.greeting,
+                                onGreetingShown = vm::markGreetingShown,
+                            )
+                        }
                     }
-                } else {
-                    ConversationView(
-                        messages = messages,
-                        actions = actions,
-                        showGreeting = vm.showGreeting,
-                        greeting = vm.greeting,
-                        onGreetingShown = vm::markGreetingShown,
-                    )
                 }
             }
 
@@ -323,8 +334,6 @@ fun HomeScreen(
 
             VoiceDock(
                 talkMode = talkModeFor(state, vm.sttAvailable, hasMic),
-                audioActive = audioActive,
-                audioLevel = audioLevel,
                 stoppable = inFlight || state == CoreState.SPEAKING || state == CoreState.LISTENING,
                 onStop = {
                     haptics.press()
@@ -424,8 +433,6 @@ private fun HomeHeader(
 private fun StatusBlock(
     state: CoreState,
     caption: String,
-    audioActive: Boolean,
-    audioLevel: () -> Float,
     latest: ChatMessage?,
     onOpenConversation: () -> Unit,
     canRetry: Boolean,
@@ -459,12 +466,7 @@ private fun StatusBlock(
                 Text("MIC ON", style = MaterialTheme.typography.labelSmall, color = c.error)
             }
         }
-        LiveWaveStrip(
-            active = audioActive,
-            level = audioLevel,
-            color = if (state == CoreState.SPEAKING) c.violet else c.cyan,
-            modifier = Modifier.fillMaxWidth(0.6f).height(26.dp).padding(vertical = 4.dp),
-        )
+        Spacer(Modifier.height(4.dp))
         Text(
             caption,
             style = MaterialTheme.typography.bodyMedium,
@@ -636,8 +638,6 @@ private fun CommandBar(
 @Composable
 private fun VoiceDock(
     talkMode: TalkMode,
-    audioActive: Boolean,
-    audioLevel: () -> Float,
     stoppable: Boolean,
     onStop: () -> Unit,
     onStartTalk: () -> Unit,
@@ -648,8 +648,7 @@ private fun VoiceDock(
     haptics: FreyaHaptics,
 ) {
     val c = FreyaTheme.colors
-    Box(Modifier.fillMaxWidth().height(104.dp), contentAlignment = Alignment.Center) {
-        MicWaves(active = audioActive, level = audioLevel, modifier = Modifier.fillMaxSize())
+    Box(Modifier.fillMaxWidth().height(96.dp), contentAlignment = Alignment.Center) {
         PushToTalkButton(
             mode = talkMode,
             level = 0f,

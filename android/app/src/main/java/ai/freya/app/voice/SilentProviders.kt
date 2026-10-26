@@ -28,6 +28,7 @@ class SilentTextToSpeechProvider : TextToSpeechProvider {
         onWord: (Int, Int) -> Unit,
         onLevel: (Float) -> Unit,
         onMeasured: (Boolean) -> Unit,
+        onBands: (FloatArray) -> Unit,
     ) {
         onError("Voice output is not available on this device.")
     }

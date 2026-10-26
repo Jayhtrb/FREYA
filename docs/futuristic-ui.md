@@ -16,30 +16,30 @@ against the real backend in assistant-only mode with the deterministic mock prov
 | Components | `ui/components/Glass.kt` | `FreyaBackdrop` (gradient + stage light + fixed star field, drawn once), `GlassPanel` (translucent fill, hairline border, top sheen — no real blur, so it's cheap on every device), `StatusChip`, `SectionLabel`, `GlassAction`, `InfoRow`. |
 | Haptics | `ui/components/Haptics.kt` | Platform constants only (respects system haptic settings): press, start, confirm, reject, tick. Toggle in Settings. |
 
-## FREYA Core — real-time renderer
+## FREYA Core — real-time energy waveform
 
-Reusable component: `FreyaCore(state, audioLevel = { … }, audioMeasured, wordTick, receivedChars,
-acknowledgeTick, presence, appearance)` in `ui/core/FreyaCore.kt`. The Core never owns microphones,
-TTS, permissions or the network; it renders a state plus an optional audio envelope.
+Reusable component: `FreyaCore(state, audioLevel = { … }, audioMeasured, audioBands = { … }, wordTick,
+receivedChars, acknowledgeTick, appearance)` in `ui/core/FreyaCore.kt`. It is purely abstract — no face,
+figure, avatar, silhouette, rings or dials. The Core never owns microphones, TTS, permissions or the network;
+it renders a state plus optional measured audio (a level and, for FREYA's voice, an 8-band spectrum).
 
 | Layer | File | Role |
 |---|---|---|
-| Tokens | `ui/core/CoreAppearance.kt` | `CoreAppearance` (particle density, glow, wave amplitude, ring thickness, motion speed, strand count), `CorePalette` per state (cyan / electric blue / violet, restrained magenta; light variant), `StateStyle` per state (energy, turbulence, audio gain, spread, travel, lock, fracture, satellites). |
-| Engine | `ui/core/CoreEngine.kt` | Pure Kotlin, unit-tested. Eases style + colours toward the target state, smooths audio with an attack/release follower, moves 150 particles (struct-of-arrays, no per-frame allocation), travelling pulses and onset ripples. |
-| Renderer | `ui/core/CoreRenderer.kt` | One Canvas, drawn in layers: nebula haze · back particles · crosshair with star flares · HUD rings (cached tick/dot paths, rotating arcs with two-pass bloom) · horizontal audio spectrum · flowing waveform strands · orb · front particles · pulses · ripples · state overlays. Additive blending in dark theme. |
-| Presence | `ui/core/FreyaPresence.kt` | An original side profile drawn in light with flowing hair strands; or an abstract energy swirl (Settings → FREYA presence). |
+| Tokens | `ui/core/CoreAppearance.kt` | `CoreAppearance` (particle count 2,400, filaments, field waves, stream particles, glow, amplitude, motion speed), `CorePalette` per state (electric cyan, ice blue, violet, restrained magenta; deepened light variant), `StateStyle` per state (energy, turbulence, swirl, audio gain, breath, contraction, scatter, orbit, field, glow, spin). |
+| Engine | `ui/core/CoreEngine.kt` | Pure Kotlin, unit-tested. A 3D orb of 2,400 particles (Fibonacci sphere: 72% shell, 28% volume) displaced by a smooth noise field, the audio level and per-latitude frequency bands, rotated and perspective-projected each frame; 7 flowing filament arcs over the surface; 8 horizontal field waves (one per band) with 320 particles streaming outward along them; onset ripples that travel across the particle surface. Struct-of-arrays, no per-frame allocation. |
+| Renderer | `ui/core/CoreRenderer.kt` | One Canvas: volumetric haze and a flattened light bank → field waves (glow + core stroke) and the outward stream → far filaments → far particles → luminous nucleus → near particles with motion trails → near filaments with bright heads. Particles are drawn in five colour/depth buckets with batched `drawPoints`/`drawLines`, additive blending in dark theme. |
 
 **States** — `deriveCoreState()` (`domain/CoreState.kt`) picks one from real session signals:
 
 | State | Real signal | What moves |
 |---|---|---|
-| IDLE | nothing in flight | slow drifting particles, gently flowing strands, rotating rings, ambient spectrum |
-| LISTENING | `SpeechRecognizer` capturing | spectrum, strands and particle spread follow the **mic RMS envelope**; red "MIC ON" indicator + Android's privacy dot |
-| PROCESSING | chat request in flight | high energy, turbulent strands, travelling light pulses; strand phase shifts with the **real streamed character count** |
-| TOOL EXECUTION | tool call in flight | three satellites with trails on the outer orbit; caption shows the task ("Inspecting your knowledge graph") |
-| SPEAKING | TTS audio playing | spectrum, strands, orb rim, ripples and the presence's lips follow **FREYA's measured voice level** |
-| AWAITING APPROVAL | sensitive tool pending | motion almost stops; closed amber double ring with four brackets; approval sheet |
-| ERROR | unresolved error | rings break into static segments, strands flatten; Retry / Check connection / Dismiss |
+| IDLE | nothing in flight | slow rotation, breathing surface, gentle field swell, filaments drifting |
+| LISTENING | `SpeechRecognizer` capturing | orb surface, field waves and ripples follow the **mic level** (cyan/ice); red "MIC ON" indicator + Android's privacy dot |
+| PROCESSING | chat request in flight | orb twists into a vortex, filaments braid fast, field waves phase-lock into a tighter braid (violet/magenta); the pattern advances with the **real streamed character count** |
+| TOOL EXECUTION | tool call in flight | ~18% of particles peel off into a tilted orbiting stream; caption names the task |
+| SPEAKING | TTS audio playing | latitude bands of the orb and each field wave follow **FREYA's measured voice spectrum** (low bands at the equator / long swells, high bands at the poles / short ripples) |
+| AWAITING APPROVAL | sensitive tool pending | orb draws in and almost stops, field flattens, magenta-violet; approval sheet |
+| ERROR | unresolved error | particles drift apart, desaturated crimson, filaments shorten; Retry / Check connection / Dismiss |
 
 **Frame budget.** 60 fps while listening/speaking/processing/tool; 30 fps idle; 20 fps approval/error;
 no frames when the screen isn't visible (lifecycle below STARTED); with reduce-motion the ambient clock is
@@ -55,20 +55,30 @@ frozen and the loop stops once colours settle (it runs only while live audio is 
   30 ms as `VoiceController.outputLevel`. Sentence N+1 is synthesised while N plays.
 - **FREYA's voice (Voicebox engine):** same pipeline, but the WAV comes from Voicebox via the backend —
   see `docs/voicebox.md`.
+- **Frequency bands (FREYA's voice):** the same WAV is analysed per 20 ms frame into 8 log-spaced bands
+  (140 Hz–5.2 kHz, Goertzel filters, `AudioEnvelope.bands`), and the bands at the playback position are
+  published with the level (`VoiceController.outputBands`). The microphone has no spectrum (Android's
+  recognizer only reports a level), so while listening the level is spread over a fixed speech-shaped
+  profile; the engine flags that as `bandsMeasured = false`.
 - **Fallback:** if a TTS engine can't produce readable 16-bit PCM WAV, the rest of the reply is spoken
   directly; `outputMeasured = false`, the caption drops "Voice-synced", and only the engine's word timing
   (`onRangeStart`) drives a gentler pulse. Without word timing nothing pretends to be audio.
 
 ## Home screen
 
-Header: FREYA wordmark, conversation toggle, Settings, and a compact pill — connection
-(ONLINE / NO PROVIDER / OFFLINE) plus the model the backend reported. The Core fills the upper and middle
-screen (full-width canvas, responsive geometry). Below it: spaced status label ("LISTENING TO YOU"), a live
-wave strip (measured level, dotted baseline when silent), a one-line caption, quick actions that only open
-screens or send prompts FREYA can handle (no "Search the web" while no web tool exists), a command bar
-(text, clear, send; "+" uploads documents to a project — chat itself has no attachments yet), and the talk
-button with audio-reactive light waves and a Stop control. Navigation: FREYA · Projects · Tools · Settings,
-without a container so it never competes with the Core. Background jobs moved into Tools.
+The waveform owns the whole upper region of the screen — about 60% of the usable height on a phone (the
+journey logs the measured fraction) — with the FREYA wordmark and a compact connection/model pill floating
+over its top and a minimal status label + one-line caption over its lower edge. Below it: quick actions that
+only open screens or send prompts FREYA can handle, a command bar (text, clear, send; "+" uploads documents to
+a project), and the talk button with a Stop control. Navigation: FREYA · Projects · Tools · Settings, without
+a container so it never competes with the Core. Conversation mode fades the waveform out and shows the
+transcript in the same region, with a small orb in the header.
+
+**Debug preview.** Debug builds include `debug/CorePreviewActivity` (not in release), which shows the real
+Core in one state with animation forced on — CI uses it to record every state animating. Listening and
+speaking there use a synthetic speech-shaped test signal (labelled on screen) because the CI emulator has no
+microphone or speaker:
+`adb shell am start -n ai.freya.app.debug/ai.freya.app.debug.CorePreviewActivity --es state SPEAKING`.
 
 ## Interaction contract
 
@@ -90,7 +100,7 @@ without a container so it never competes with the Core. Background jobs moved in
 
 | Area | Status |
 |---|---|
-| Real-time Core (particles, strands, HUD rings, spectrum, presence), push-to-talk, live transcript, interrupt, text input | Implemented |
+| Real-time energy waveform Core (3D particle orb, filaments, frequency-band field, ripples), push-to-talk, live transcript, interrupt, text input | Implemented |
 | Measured voice amplitude (phone TTS and Voicebox) | Implemented; falls back to timing-only when an engine can't write WAV |
 | Voicebox voice | Implemented end to end; **needs Voicebox running on your computer** (`docs/voicebox.md`) |
 | Streaming replies, timing details, copy/retry/stop/feedback/read-aloud, sources, code blocks | Implemented |
@@ -108,7 +118,9 @@ without a container so it never competes with the Core. Background jobs moved in
 
 - The engine steps inside `withFrameNanos`; the Canvas reads one frame counter in its draw lambda, so a frame
   re-draws only the Core and never recomposes the screen. Audio levels are read through a lambda each frame.
-- Ring ticks, dot rings and the orb clip are cached `Path`s rebuilt only on size change; strand paths are reused.
+- 2,400 orb particles + 320 stream particles are drawn with ~16 batched native `drawPoints`/`drawLines`
+  calls into reused float buffers (no per-particle draw calls, no per-frame allocation); the Core renders
+  into its own offscreen layer so unrelated UI changes don't re-rasterise it.
 - On the CI emulator (software rendering) continuous animation saturates the UI thread, so the journey runs
   with animations removed and a separate pass records animated frames + `dumpsys gfxinfo` / `meminfo`.
   Real-device frame timing has **not** been measured yet.

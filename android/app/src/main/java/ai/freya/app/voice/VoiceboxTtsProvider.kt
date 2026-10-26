@@ -53,7 +53,7 @@ class VoiceboxTtsProvider(
         fallback.setSpeechRate(rate)
     }
 
-    private class Clip(val file: File, val envelope: FloatArray)
+    private class Clip(val file: File, val envelope: FloatArray, val bands: FloatArray)
 
     private inner class Job(
         val gen: Int,
@@ -64,8 +64,10 @@ class VoiceboxTtsProvider(
         val onWord: (Int, Int) -> Unit,
         val onLevel: (Float) -> Unit,
         val onMeasured: (Boolean) -> Unit,
+        val onBands: (FloatArray) -> Unit,
     ) {
         val clips = HashMap<Int, Clip>()
+        val bandBuf = FloatArray(AudioEnvelope.BANDS)
         var nextToPlay = 0
         var player: MediaPlayer? = null
         var started = false
@@ -81,6 +83,7 @@ class VoiceboxTtsProvider(
         onWord: (Int, Int) -> Unit,
         onLevel: (Float) -> Unit,
         onMeasured: (Boolean) -> Unit,
+        onBands: (FloatArray) -> Unit,
     ) {
         stop()
         val chunks = AudioEnvelope.chunks(text)
@@ -88,7 +91,7 @@ class VoiceboxTtsProvider(
             onDone()
             return
         }
-        val j = Job(++generation, chunks, onDone, onError, onStart, onWord, onLevel, onMeasured)
+        val j = Job(++generation, chunks, onDone, onError, onStart, onWord, onLevel, onMeasured, onBands)
         job = j
         fetch(j, 0)
     }
@@ -109,7 +112,7 @@ class VoiceboxTtsProvider(
                     val bytes = resp.body?.bytes() ?: return@runCatching null
                     val info = AudioEnvelope.parseWav(bytes) ?: return@runCatching null
                     val file = File(cacheDir, "v_${j.gen}_$index.wav").apply { writeBytes(bytes) }
-                    Clip(file, AudioEnvelope.envelope(bytes, info))
+                    Clip(file, AudioEnvelope.envelope(bytes, info), AudioEnvelope.bands(bytes, info))
                 }
             }.getOrNull()
             main.post {
@@ -157,6 +160,8 @@ class VoiceboxTtsProvider(
                 val cur = job?.takeIf { it.gen == j.gen && it.player === mp } ?: return
                 val pos = runCatching { mp.currentPosition.toLong() }.getOrDefault(-1L)
                 cur.onLevel(AudioEnvelope.levelAt(clip.envelope, pos))
+                AudioEnvelope.bandsAt(clip.bands, pos, cur.bandBuf)
+                cur.onBands(cur.bandBuf)
                 main.postDelayed(this, 30)
             }
         }, 30)
@@ -196,6 +201,7 @@ class VoiceboxTtsProvider(
             onWord = j.onWord,
             onLevel = j.onLevel,
             onMeasured = j.onMeasured,
+            onBands = j.onBands,
         )
     }
 
@@ -246,7 +252,8 @@ class SwitchingTtsProvider(
         onWord: (Int, Int) -> Unit,
         onLevel: (Float) -> Unit,
         onMeasured: (Boolean) -> Unit,
-    ) = active.speak(text, onDone, onError, onStart, onWord, onLevel, onMeasured)
+        onBands: (FloatArray) -> Unit,
+    ) = active.speak(text, onDone, onError, onStart, onWord, onLevel, onMeasured, onBands)
 
     override fun setSpeechRate(rate: Float) {
         system.setSpeechRate(rate)

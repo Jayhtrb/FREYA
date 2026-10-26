@@ -40,6 +40,11 @@ interface TextToSpeechProvider {
         onLevel: (Float) -> Unit = {},
         /** true when [onLevel] carries measured amplitude; false when only timing is available. */
         onMeasured: (Boolean) -> Unit = {},
+        /**
+         * Measured spectrum at the playback position: [AudioEnvelope.BANDS] values 0..1, published
+         * alongside [onLevel]. The array is reused between calls; copy it if you keep it.
+         */
+        onBands: (FloatArray) -> Unit = {},
     )
 
     fun setSpeechRate(rate: Float) = Unit

@@ -105,11 +105,34 @@ jobs:
             sleep 5
             adb shell dumpsys gfxinfo ai.freya.app.debug > ../screenshots/animated/gfxinfo.txt || true
             adb shell dumpsys meminfo ai.freya.app.debug > ../screenshots/animated/meminfo.txt || true
+            # Every Core state animating (debug-only preview activity forces animation on; listening
+            # and speaking use a labelled synthetic signal because the emulator has no mic/speaker).
+            mkdir -p ../screenshots/states
+            for S in IDLE LISTENING PROCESSING TOOL_EXECUTION SPEAKING AWAITING_APPROVAL ERROR; do
+              adb shell am start -W -n ai.freya.app.debug/ai.freya.app.debug.CorePreviewActivity --es state $S > /dev/null || true
+              sleep 4
+              for N in 1 2 3; do adb exec-out screencap -p > ../screenshots/states/$S-$N.png || true; sleep 0.7; done
+              if [ "$S" = "SPEAKING" ]; then
+                adb shell dumpsys gfxinfo ai.freya.app.debug reset > /dev/null || true
+                adb shell screenrecord --time-limit 6 --size 540x1200 /sdcard/speaking.mp4 || true
+                adb pull /sdcard/speaking.mp4 ../screenshots/states/speaking.mp4 || true
+                adb shell dumpsys gfxinfo ai.freya.app.debug > ../screenshots/states/gfxinfo-speaking.txt || true
+              fi
+              adb shell am force-stop ai.freya.app.debug || true
+            done
             adb shell input keyevent KEYCODE_HOME || true
             sleep 3
             adb shell dumpsys gfxinfo ai.freya.app.debug reset > /dev/null || true
             sleep 5
             adb shell dumpsys gfxinfo ai.freya.app.debug > ../screenshots/animated/gfxinfo-backgrounded.txt || true
+
+      - name: Make a GIF of the speaking waveform
+        if: always()
+        run: |
+          if [ -f screenshots/states/speaking.mp4 ] && command -v ffmpeg > /dev/null; then
+            ffmpeg -y -loglevel error -i screenshots/states/speaking.mp4 -vf "fps=12,scale=360:-1:flags=lanczos" screenshots/states/speaking.gif || true
+            ffmpeg -y -loglevel error -i screenshots/states/speaking.mp4 -vf "fps=2,scale=540:-1" screenshots/states/speaking-frame-%02d.png || true
+          fi
 
       - name: Upload screenshots and logs
         if: always()

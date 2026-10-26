@@ -48,7 +48,6 @@ class FreyaDataStore(private val context: Context) {
         val VOICE_ENABLED = booleanPreferencesKey("voice_enabled")
         val HANDS_FREE = booleanPreferencesKey("hands_free")
         val THEME_MODE = stringPreferencesKey("theme_mode")
-        val PRESENCE = stringPreferencesKey("presence")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
         val HAPTICS = booleanPreferencesKey("haptics")
         val SPEECH_RATE = floatPreferencesKey("speech_rate")
@@ -86,9 +85,6 @@ class FreyaDataStore(private val context: Context) {
     /** "dark" (default) | "light" | "system". */
     val themeMode: Flow<String> = context.freyaDataStore.data.map { it[Keys.THEME_MODE] ?: "dark" }
 
-    /** "avatar" (default) | "core" (abstract, non-humanlike). */
-    val presence: Flow<String> = context.freyaDataStore.data.map { it[Keys.PRESENCE] ?: "avatar" }
-
     val reduceMotion: Flow<Boolean> = context.freyaDataStore.data.map { it[Keys.REDUCE_MOTION] ?: false }
     val haptics: Flow<Boolean> = context.freyaDataStore.data.map { it[Keys.HAPTICS] ?: true }
     val speechRate: Flow<Float> = context.freyaDataStore.data.map { it[Keys.SPEECH_RATE] ?: 1.0f }
@@ -109,7 +105,6 @@ class FreyaDataStore(private val context: Context) {
     }
 
     suspend fun setThemeMode(value: String) = context.freyaDataStore.edit { it[Keys.THEME_MODE] = value }
-    suspend fun setPresence(value: String) = context.freyaDataStore.edit { it[Keys.PRESENCE] = value }
     suspend fun setReduceMotion(value: Boolean) = context.freyaDataStore.edit { it[Keys.REDUCE_MOTION] = value }
     suspend fun setHaptics(value: Boolean) = context.freyaDataStore.edit { it[Keys.HAPTICS] = value }
     suspend fun setVoiceEngine(value: String) = context.freyaDataStore.edit { it[Keys.VOICE_ENGINE] = value }

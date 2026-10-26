@@ -108,10 +108,6 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { dataStore.setThemeMode(value) }
     }
 
-    fun setPresence(value: String) {
-        viewModelScope.launch { dataStore.setPresence(value) }
-    }
-
     fun setReduceMotion(value: Boolean) {
         viewModelScope.launch { dataStore.setReduceMotion(value) }
     }
@@ -165,7 +161,6 @@ fun SettingsScreen(
     val voiceEnabled by vm.dataStore.voiceEnabled.collectAsStateWithLifecycle(initialValue = false)
     val handsFree by vm.dataStore.handsFreeEnabled.collectAsStateWithLifecycle(initialValue = false)
     val themeMode by vm.dataStore.themeMode.collectAsStateWithLifecycle(initialValue = "dark")
-    val presence by vm.dataStore.presence.collectAsStateWithLifecycle(initialValue = "avatar")
     val reduceMotion by vm.dataStore.reduceMotion.collectAsStateWithLifecycle(initialValue = false)
     val hapticsOn by vm.dataStore.haptics.collectAsStateWithLifecycle(initialValue = true)
     val speechRate by vm.dataStore.speechRate.collectAsStateWithLifecycle(initialValue = 1f)
@@ -213,12 +208,6 @@ fun SettingsScreen(
                 options = listOf("dark" to "Dark", "light" to "Light", "system" to "System"),
                 selected = themeMode,
                 onSelect = vm::setThemeMode,
-            )
-            ChoiceRow(
-                label = "FREYA presence",
-                options = listOf("avatar" to "Avatar", "core" to "Abstract core"),
-                selected = presence,
-                onSelect = vm::setPresence,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {

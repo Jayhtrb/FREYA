@@ -3,7 +3,6 @@ package ai.freya.app.ui.screens.auth
 import ai.freya.app.domain.CoreState
 import ai.freya.app.ui.core.CoreAppearance
 import ai.freya.app.ui.core.FreyaCore
-import ai.freya.app.ui.core.Presence
 import androidx.compose.runtime.remember
 import ai.freya.app.domain.Persona
 import ai.freya.app.ui.components.FreyaEmblem
@@ -208,7 +207,6 @@ private fun AuthScaffold(
         Spacer(Modifier.height(24.dp))
         FreyaCore(
             state = CoreState.IDLE,
-            presence = Presence.CORE,
             appearance = CoreAppearance.Compact,
             compact = true,
             modifier = Modifier.size(170.dp),

@@ -16,12 +16,12 @@ import kotlin.math.sin
 class AudioEnvelopeTest {
 
     /** 16-bit mono PCM WAV: [loudMs] of a 440 Hz tone at [amp], then [silentMs] of silence. */
-    private fun wav(rate: Int = 24000, loudMs: Int = 200, silentMs: Int = 200, amp: Double = 0.5, extraChunk: Boolean = false): ByteArray {
+    private fun wav(rate: Int = 24000, loudMs: Int = 200, silentMs: Int = 200, amp: Double = 0.5, extraChunk: Boolean = false, freq: Double = 440.0): ByteArray {
         val samples = rate * (loudMs + silentMs) / 1000
         val pcm = ByteBuffer.allocate(samples * 2).order(ByteOrder.LITTLE_ENDIAN)
         for (i in 0 until samples) {
             val loud = i < rate * loudMs / 1000
-            val v = if (loud) (sin(2 * PI * 440 * i / rate) * amp * 32767).toInt() else 0
+            val v = if (loud) (sin(2 * PI * freq * i / rate) * amp * 32767).toInt() else 0
             pcm.putShort(v.toShort())
         }
         val out = ByteArrayOutputStream()
@@ -90,5 +90,39 @@ class AudioEnvelopeTest {
         assertTrue(chunks.all { it.length <= 30 })
         assertEquals("First sentence. Second one!", chunks.first())
         assertTrue(AudioEnvelope.chunks("   ").isEmpty())
+    }
+
+    private fun bandsOf(bytes: ByteArray): Pair<FloatArray, Int> {
+        val info = AudioEnvelope.parseWav(bytes)!!
+        return AudioEnvelope.bands(bytes, info) to (info.dataSize / 2 / (info.sampleRate * AudioEnvelope.FRAME_MS / 1000))
+    }
+
+    private fun dominantBand(bands: FloatArray, frame: Int): Int =
+        (0 until AudioEnvelope.BANDS).maxBy { bands[frame * AudioEnvelope.BANDS + it] }
+
+    @Test fun bandsLocateTheToneInTheSpectrum() {
+        val (low, _) = bandsOf(wav(freq = 440.0))
+        val (high, _) = bandsOf(wav(freq = 3100.0))
+        assertEquals(2, dominantBand(low, 3))
+        assertEquals(6, dominantBand(high, 3))
+        // A loud tone registers strongly in its own band.
+        assertTrue(low[3 * AudioEnvelope.BANDS + 2] > 0.6f)
+    }
+
+    @Test fun bandsAreSilentDuringSilence() {
+        val (b, frames) = bandsOf(wav(loudMs = 100, silentMs = 300))
+        val last = frames - 2
+        for (k in 0 until AudioEnvelope.BANDS) assertEquals(0f, b[last * AudioEnvelope.BANDS + k], 0.001f)
+    }
+
+    @Test fun bandsAtReadsTheFrameAtThePlaybackPosition() {
+        val (b, _) = bandsOf(wav(freq = 440.0, loudMs = 100, silentMs = 300))
+        val dst = FloatArray(AudioEnvelope.BANDS)
+        AudioEnvelope.bandsAt(b, 40, dst)
+        assertTrue(dst[2] > 0.5f)
+        AudioEnvelope.bandsAt(b, 350, dst)
+        assertEquals(0f, dst[2], 0.001f)
+        AudioEnvelope.bandsAt(b, 60_000, dst)
+        assertTrue(dst.all { it == 0f })
     }
 }

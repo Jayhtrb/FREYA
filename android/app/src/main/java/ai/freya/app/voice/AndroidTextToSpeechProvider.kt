@@ -63,6 +63,7 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
         onWord: (Int, Int) -> Unit,
         onLevel: (Float) -> Unit,
         onMeasured: (Boolean) -> Unit,
+        onBands: (FloatArray) -> Unit,
     ) {
         val engine = tts
         if (engine == null || !ready) {
@@ -76,7 +77,7 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
             return
         }
         val gen = ++generation
-        val j = SpeechJob(gen, chunks, onDone, onError, onStart, onWord, onLevel, onMeasured)
+        val j = SpeechJob(gen, chunks, onDone, onError, onStart, onWord, onLevel, onMeasured, onBands)
         job = j
         engine.setOnUtteranceProgressListener(listener)
         synthesize(j, 0)
@@ -84,7 +85,7 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
 
     // ------------------------------------------------------------------ measured path
 
-    private class Clip(val file: File, val envelope: FloatArray)
+    private class Clip(val file: File, val envelope: FloatArray, val bands: FloatArray)
 
     private inner class SpeechJob(
         val gen: Int,
@@ -95,8 +96,10 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
         val onWord: (Int, Int) -> Unit,
         val onLevel: (Float) -> Unit,
         val onMeasured: (Boolean) -> Unit,
+        val onBands: (FloatArray) -> Unit,
     ) {
         val clips = HashMap<Int, Clip>()
+        val bandBuf = FloatArray(AudioEnvelope.BANDS)
         var nextToPlay = 0
         var player: MediaPlayer? = null
         var started = false
@@ -119,18 +122,18 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
         if (job?.gen != gen) return
         val file = File(cacheDir, "u_${gen}_$index.wav")
         worker.execute {
-            val envelope = runCatching {
+            val analysed = runCatching {
                 val bytes = file.readBytes()
-                AudioEnvelope.parseWav(bytes)?.let { AudioEnvelope.envelope(bytes, it) }
+                AudioEnvelope.parseWav(bytes)?.let { AudioEnvelope.envelope(bytes, it) to AudioEnvelope.bands(bytes, it) }
             }.getOrNull()
             main.post {
                 val current = job?.takeIf { it.gen == gen } ?: run { file.delete(); return@post }
-                if (envelope == null) {
+                if (analysed == null) {
                     file.delete()
                     startFallback(current, index)
                     return@post
                 }
-                current.clips[index] = Clip(file, envelope)
+                current.clips[index] = Clip(file, analysed.first, analysed.second)
                 if (current.player == null && current.nextToPlay == index) play(current, index)
                 synthesize(current, index + 1)
             }
@@ -164,16 +167,18 @@ class AndroidTextToSpeechProvider(context: Context) : TextToSpeechProvider {
             j.onMeasured(true)
             j.onStart()
         }
-        pollLevel(j.gen, mp, clip.envelope)
+        pollLevel(j.gen, mp, clip)
     }
 
     /** Publishes the envelope at the real playback position every 30 ms while this clip plays. */
-    private fun pollLevel(gen: Int, mp: MediaPlayer, envelope: FloatArray) {
+    private fun pollLevel(gen: Int, mp: MediaPlayer, clip: Clip) {
         main.postDelayed(object : Runnable {
             override fun run() {
                 val j = job?.takeIf { it.gen == gen && it.player === mp } ?: return
                 val pos = runCatching { mp.currentPosition.toLong() }.getOrDefault(-1L)
-                j.onLevel(AudioEnvelope.levelAt(envelope, pos))
+                j.onLevel(AudioEnvelope.levelAt(clip.envelope, pos))
+                AudioEnvelope.bandsAt(clip.bands, pos, j.bandBuf)
+                j.onBands(j.bandBuf)
                 main.postDelayed(this, 30)
             }
         }, 30)

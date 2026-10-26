@@ -5,34 +5,36 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * Design tokens for the FREYA Core. Every visual quantity the renderer uses comes from here
- * (palette, glow, particle density, wave amplitude, ring thickness, motion speed), so the
- * look can be tuned or themed without touching drawing code.
+ * Design tokens for the FREYA energy core. Every visual quantity the renderer uses comes from
+ * here (particle budget, filament and wave counts, glow, amplitude, motion speed, palette), so
+ * the look can be tuned or themed without touching simulation or drawing code.
  */
 @Immutable
 data class CoreAppearance(
-    /** Multiplier on particle count (1 = 150 particles). Lowered automatically for small cores. */
-    val particleDensity: Float = 1f,
-    /** 0..1.5 multiplier on every glow/bloom alpha. Kept restrained so text stays readable. */
+    /** Luminous particles forming the 3D energy orb. */
+    val particleCount: Int = 2400,
+    /** Flowing light filaments sweeping over the orb surface. */
+    val filamentCount: Int = 7,
+    /** Horizontal energy-field waves; one per frequency band (0 = no field, e.g. compact). */
+    val waveCount: Int = 8,
+    /** Particles streaming outward along the horizontal field. */
+    val streamCount: Int = 320,
+    /** 0..1.5 multiplier on every glow alpha. */
     val glow: Float = 1f,
-    /** Multiplier on strand / spectrum amplitude. */
+    /** Multiplier on audio-driven displacement and wave amplitude. */
     val waveAmplitude: Float = 1f,
-    /** Base hairline width in px is size-relative; this scales it. */
-    val ringThickness: Float = 1f,
     /** Multiplier on all ambient motion speeds. */
     val motionSpeed: Float = 1f,
-    /** Number of flowing waveform strands across the core. */
-    val strandCount: Int = 6,
     val palette: CorePalette = CorePalette.Dark,
 ) {
     companion object {
         val Default = CoreAppearance()
-        /** For small placements (header badge, sign-in): fewer particles, no spectrum. */
-        val Compact = CoreAppearance(particleDensity = 0.35f, strandCount = 3, waveAmplitude = 0.7f)
+        /** Small placements (header badge, sign-in): the orb only, fewer particles, no field. */
+        val Compact = CoreAppearance(particleCount = 420, filamentCount = 4, waveCount = 0, streamCount = 0)
     }
 }
 
-/** Colour sets per state. Cyan / electric blue / violet with restrained magenta. */
+/** Colour sets per state: electric cyan, ice blue and violet, with restrained magenta. */
 @Immutable
 data class CorePalette(
     val idle: StatePalette,
@@ -42,8 +44,6 @@ data class CorePalette(
     val speaking: StatePalette,
     val approval: StatePalette,
     val error: StatePalette,
-    val orbFill: Color,
-    val haze: Color,
 ) {
     fun forState(s: CoreState): StatePalette = when (s) {
         CoreState.IDLE -> idle
@@ -56,69 +56,65 @@ data class CorePalette(
     }
 
     companion object {
-        private val Cyan = Color(0xFF5FE6FF)
-        private val Electric = Color(0xFF3D7BFF)
-        private val Violet = Color(0xFF9B6BFF)
-        private val Magenta = Color(0xFFE05BFF)
-        private val Ice = Color(0xFFD7F3FF)
-        private val Amber = Color(0xFFFFC46B)
-        private val Ember = Color(0xFFFF6B72)
+        private val Cyan = Color(0xFF4FE3FF)
+        private val Ice = Color(0xFFD4F4FF)
+        private val IceBlue = Color(0xFF7FB8FF)
+        private val Electric = Color(0xFF3E8BFF)
+        private val Violet = Color(0xFF8E6BFF)
+        private val Magenta = Color(0xFFE25BFF)
 
         val Dark = CorePalette(
-            idle = StatePalette(primary = Electric, secondary = Cyan, accent = Violet),
-            listening = StatePalette(primary = Cyan, secondary = Ice, accent = Electric),
-            processing = StatePalette(primary = Violet, secondary = Cyan, accent = Magenta),
-            tool = StatePalette(primary = Cyan, secondary = Violet, accent = Ice),
-            speaking = StatePalette(primary = Violet, secondary = Cyan, accent = Magenta),
-            approval = StatePalette(primary = Amber, secondary = Color(0xFFFFE2B0), accent = Violet),
-            error = StatePalette(primary = Ember, secondary = Color(0xFFFFB3B6), accent = Color(0xFF7A5CFF)),
-            orbFill = Color(0xFF060A1C),
-            haze = Violet,
+            idle = StatePalette(primary = Electric, secondary = Cyan, accent = Violet, hot = Ice),
+            listening = StatePalette(primary = Cyan, secondary = Ice, accent = IceBlue, hot = Color(0xFFF0FBFF)),
+            processing = StatePalette(primary = Violet, secondary = Cyan, accent = Magenta, hot = Color(0xFFE9DDFF)),
+            tool = StatePalette(primary = Cyan, secondary = Violet, accent = Magenta, hot = Ice),
+            speaking = StatePalette(primary = Color(0xFF5AA8FF), secondary = Cyan, accent = Magenta, hot = Ice),
+            approval = StatePalette(primary = Color(0xFFC46BFF), secondary = Color(0xFFF1C8FF), accent = Violet, hot = Color(0xFFFBEFFF)),
+            error = StatePalette(primary = Color(0xFFFF4F86), secondary = Color(0xFFB8A9C9), accent = Violet, hot = Color(0xFFFFC2D4)),
         )
 
         /** Light theme keeps the hues but deepens them so light-on-light stays visible. */
         val Light = CorePalette(
-            idle = StatePalette(primary = Color(0xFF2F5BE0), secondary = Color(0xFF0091B8), accent = Color(0xFF6B45E0)),
-            listening = StatePalette(primary = Color(0xFF0091B8), secondary = Color(0xFF2F5BE0), accent = Color(0xFF6B45E0)),
-            processing = StatePalette(primary = Color(0xFF6B45E0), secondary = Color(0xFF0091B8), accent = Color(0xFFB03FD6)),
-            tool = StatePalette(primary = Color(0xFF0091B8), secondary = Color(0xFF6B45E0), accent = Color(0xFF2F5BE0)),
-            speaking = StatePalette(primary = Color(0xFF6B45E0), secondary = Color(0xFF0091B8), accent = Color(0xFFB03FD6)),
-            approval = StatePalette(primary = Color(0xFFB36A00), secondary = Color(0xFFD48A1E), accent = Color(0xFF6B45E0)),
-            error = StatePalette(primary = Color(0xFFC62E3A), secondary = Color(0xFFE0636B), accent = Color(0xFF6B45E0)),
-            orbFill = Color(0xFFE8EEFF),
-            haze = Color(0xFF6B45E0),
+            idle = StatePalette(Color(0xFF1F5FD6), Color(0xFF0088B0), Color(0xFF5B3FD0), Color(0xFF0B3A8F)),
+            listening = StatePalette(Color(0xFF0088B0), Color(0xFF1F5FD6), Color(0xFF5B3FD0), Color(0xFF00506A)),
+            processing = StatePalette(Color(0xFF5B3FD0), Color(0xFF0088B0), Color(0xFFA02FC8), Color(0xFF331F8A)),
+            tool = StatePalette(Color(0xFF0088B0), Color(0xFF5B3FD0), Color(0xFFA02FC8), Color(0xFF00506A)),
+            speaking = StatePalette(Color(0xFF1F5FD6), Color(0xFF0088B0), Color(0xFFA02FC8), Color(0xFF0B3A8F)),
+            approval = StatePalette(Color(0xFF8E2FC8), Color(0xFFB45FE0), Color(0xFF5B3FD0), Color(0xFF55127A)),
+            error = StatePalette(Color(0xFFC8245A), Color(0xFF8A7A9C), Color(0xFF5B3FD0), Color(0xFF7A0F33)),
         )
     }
 }
 
 @Immutable
-data class StatePalette(val primary: Color, val secondary: Color, val accent: Color)
+data class StatePalette(val primary: Color, val secondary: Color, val accent: Color, val hot: Color)
 
 /**
  * Behaviour per state. The engine eases from the current style to the target style, so
  * transitions are continuous and always reflect the real state model.
  */
 data class StateStyle(
-    val energy: Float,        // ambient motion speed 0..1
-    val turbulence: Float,    // strand shape complexity 0..1
-    val strandAmp: Float,     // baseline strand amplitude 0..1 (before audio)
-    val audioGain: Float,     // how strongly measured audio drives geometry
-    val spread: Float,        // particle outward push from audio 0..1
-    val travel: Float,        // travelling light pulses 0..1
-    val glow: Float,          // overall brightness 0..1
-    val lock: Float,          // approval: motion damped + bracket marks
-    val fracture: Float,      // error: broken rings, desaturated
-    val satellites: Float,    // tool execution: orbiting markers
+    val energy: Float,       // rotation and ambient flow speed 0..1
+    val turbulence: Float,   // surface noise displacement (fraction of radius)
+    val swirl: Float,        // processing: latitude-dependent vortex twist, braided filaments
+    val audioGain: Float,    // how strongly the measured level and bands move geometry
+    val breath: Float,       // slow breathing amplitude
+    val contraction: Float,  // approval: orb draws in and holds still
+    val scatter: Float,      // error: particles drift apart, desaturated
+    val orbit: Float,        // task: a share of particles leaves the orb as an orbiting stream
+    val field: Float,        // horizontal field baseline amplitude (fraction of radius)
+    val glow: Float,         // overall brightness 0..1
+    val spin: Float,         // filament precession speed
 ) {
     companion object {
         fun forState(s: CoreState): StateStyle = when (s) {
-            CoreState.IDLE -> StateStyle(0.22f, 0.25f, 0.30f, 0f, 0f, 0.15f, 0.62f, 0f, 0f, 0f)
-            CoreState.LISTENING -> StateStyle(0.45f, 0.35f, 0.12f, 1.0f, 0.9f, 0.05f, 0.85f, 0f, 0f, 0f)
-            CoreState.PROCESSING -> StateStyle(0.95f, 0.85f, 0.45f, 0f, 0.2f, 1.0f, 0.9f, 0f, 0f, 0f)
-            CoreState.TOOL_EXECUTION -> StateStyle(0.75f, 0.55f, 0.35f, 0f, 0.1f, 0.8f, 0.85f, 0f, 0f, 1f)
-            CoreState.SPEAKING -> StateStyle(0.5f, 0.45f, 0.12f, 1.0f, 0.6f, 0.2f, 0.9f, 0f, 0f, 0f)
-            CoreState.AWAITING_APPROVAL -> StateStyle(0.06f, 0.1f, 0.18f, 0f, 0f, 0f, 0.7f, 1f, 0f, 0f)
-            CoreState.ERROR -> StateStyle(0.04f, 0.05f, 0.06f, 0f, 0f, 0f, 0.5f, 0f, 1f, 0f)
+            CoreState.IDLE -> StateStyle(0.22f, 0.07f, 0f, 0f, 1f, 0f, 0f, 0f, 0.12f, 0.72f, 0.2f)
+            CoreState.LISTENING -> StateStyle(0.40f, 0.06f, 0f, 1f, 0.3f, 0f, 0f, 0f, 0.10f, 0.92f, 0.3f)
+            CoreState.PROCESSING -> StateStyle(1.00f, 0.16f, 1f, 0f, 0.2f, 0f, 0f, 0f, 0.22f, 0.95f, 1.4f)
+            CoreState.TOOL_EXECUTION -> StateStyle(0.70f, 0.10f, 0.35f, 0f, 0.2f, 0f, 0f, 1f, 0.16f, 0.90f, 0.8f)
+            CoreState.SPEAKING -> StateStyle(0.45f, 0.06f, 0f, 1f, 0.2f, 0f, 0f, 0f, 0.10f, 0.95f, 0.4f)
+            CoreState.AWAITING_APPROVAL -> StateStyle(0.06f, 0.03f, 0f, 0f, 0.6f, 0.16f, 0f, 0f, 0.04f, 0.75f, 0.05f)
+            CoreState.ERROR -> StateStyle(0.05f, 0.02f, 0f, 0f, 0f, 0.05f, 1f, 0f, 0.02f, 0.50f, 0f)
         }
     }
 }

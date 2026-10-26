@@ -21,16 +21,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 
-/** Whether the centre of the Core shows FREYA's profile or an abstract energy swirl. */
-enum class Presence { AVATAR, CORE }
-
 /**
- * The FREYA Core — a reusable, real-time visualization.
+ * The FREYA Core — a real-time, state-driven energy waveform: a 3D orb of luminous particles,
+ * flowing light filaments, a horizontal field of frequency-band waves and travelling ripples.
+ * Purely abstract: no face, figure, avatar or dial.
  *
  * Contract: the caller supplies the application [state] and, optionally, a measured audio
- * envelope ([audioLevel], read every frame without recomposition) plus whether that envelope
- * is measured ([audioMeasured]). The Core never touches microphones, TTS, permissions or the
- * network; it only renders what it is told.
+ * level ([audioLevel], read every frame without recomposition), whether it is measured
+ * ([audioMeasured]) and the measured spectrum of FREYA's voice ([audioBands]). The Core never
+ * touches microphones, TTS, permissions or the network; it only renders what it is told.
  *
  * Frame budget:
  *  - 60 fps while listening, speaking, thinking or running a task;
@@ -45,10 +44,10 @@ fun FreyaCore(
     modifier: Modifier = Modifier,
     audioLevel: () -> Float = { 0f },
     audioMeasured: Boolean = false,
+    audioBands: () -> FloatArray? = { null },
     wordTick: Long = 0,
     receivedChars: Int = 0,
     acknowledgeTick: Long = 0,
-    presence: Presence = Presence.AVATAR,
     appearance: CoreAppearance = CoreAppearance.Default,
     compact: Boolean = false,
     animate: Boolean = true,
@@ -68,6 +67,7 @@ fun FreyaCore(
     val currentState by rememberUpdatedState(state)
     val currentLevel by rememberUpdatedState(audioLevel)
     val currentMeasured by rememberUpdatedState(audioMeasured)
+    val currentBands by rememberUpdatedState(audioBands)
     val currentWord by rememberUpdatedState(wordTick)
     val currentChars by rememberUpdatedState(receivedChars)
     val currentAck by rememberUpdatedState(acknowledgeTick)
@@ -98,6 +98,7 @@ fun FreyaCore(
                     state = s,
                     audioLevel = currentLevel(),
                     audioMeasured = currentMeasured,
+                    audioBands = currentBands(),
                     wordTick = currentWord,
                     receivedChars = currentChars,
                     acknowledgeTick = currentAck,
@@ -120,6 +121,6 @@ fun FreyaCore(
             },
     ) {
         frame.intValue // read in draw: each engine step invalidates only this draw pass
-        drawFreyaCore(engine, cache, resolved, presence, additive = isDark, compact = compact)
+        drawFreyaCore(engine, cache, additive = isDark, compact = compact)
     }
 }

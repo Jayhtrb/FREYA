@@ -3,5 +3,12 @@
      development hosts work without TLS. Release builds inherit the secure
      default (cleartext disabled → HTTPS required). -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:usesCleartextTraffic="true" />
+    <application android:usesCleartextTraffic="true">
+        <!-- Debug-only visual check of every Core state with animation forced on
+             (used by CI to record the waveform). Not present in release builds. -->
+        <activity
+            android:name=".debug.CorePreviewActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FREYA" />
+    </application>
 </manifest>

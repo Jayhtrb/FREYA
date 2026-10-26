@@ -76,7 +76,17 @@ class FreyaJourneyTest {
         val idle = device.wait(Until.findObject(By.text("STANDING BY")), 30_000)
         assertNotNull("Home did not show the idle Core", idle)
         Thread.sleep(1500)
-        shot("01-home-idle-avatar")
+        shot("01-home-idle")
+        step("core-size") {
+            // How much of the app's usable area (below the status bar, above the system nav) the
+            // waveform region occupies.
+            val core = device.findObject(By.descStartsWith("FREYA: "))!!.visibleBounds
+            val root = device.findObject(By.pkg(pkg).depth(0))!!.visibleBounds
+            val nav = device.findObject(By.text("SETTINGS"))?.visibleBounds
+            val usableBottom = nav?.top ?: root.bottom
+            val frac = core.height().toFloat() / (usableBottom - root.top).coerceAtLeast(1)
+            Log.i(TAG, "core bounds=$core root=$root navTop=${nav?.top} fraction=${"%.2f".format(frac)}")
+        }
 
         // ---- type a message; it must stream back from the backend ----
         val input = device.findObject(By.clazz("android.widget.EditText"))
@@ -189,16 +199,14 @@ class FreyaJourneyTest {
             device.findObject(By.text("SETTINGS")).click()
             repeat(4) { device.findObject(By.scrollable(true))?.scroll(Direction.UP, 0.9f) }
             findWithScroll(By.text("Light"))?.click()
-            device.findObject(By.text("Abstract core"))?.click()
             Thread.sleep(800)
             shot("14-settings-light")
             device.findObjects(By.text("FREYA")).maxByOrNull { it.visibleBounds.top }?.click()
             Thread.sleep(1500)
-            shot("15-home-light-abstract-core")
+            shot("15-home-light")
             device.findObject(By.text("SETTINGS")).click()
             device.wait(Until.hasObject(By.text("Appearance")), timeout)
             device.findObject(By.text("Dark"))?.click()
-            device.findObject(By.text("Avatar"))?.click()
         }
     }
 

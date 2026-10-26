@@ -7,14 +7,12 @@ import ai.freya.app.domain.SessionGreeting
 import ai.freya.app.domain.Suggestion
 import ai.freya.app.domain.Suggestions
 import ai.freya.app.domain.model.MessageKind
-import ai.freya.app.ui.core.Presence
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalTime
 
@@ -43,13 +41,11 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val inputLevel = voice.inputLevel
     val outputLevel = voice.outputLevel
     val outputMeasured = voice.outputMeasured
+    val outputBands = voice.outputBands
     val wordTick = voice.wordTick
     val wordSynced = voice.wordSynced
     val audible = voice.audible
 
-    val presence: StateFlow<Presence> = dataStore.presence
-        .map { if (it == "core") Presence.CORE else Presence.AVATAR }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, Presence.AVATAR)
     val haptics = dataStore.haptics.stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val speechRate = dataStore.speechRate.stateIn(viewModelScope, SharingStarted.Eagerly, 1f)
 
