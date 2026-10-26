@@ -30,9 +30,11 @@ object ServerAddress {
      * Returns null for blank or unparseable input.
      */
     fun normalize(raw: String): HttpUrl? {
-        var s = raw.trim().trimEnd('/')
+        var s = raw.trim()
         if (s.isEmpty()) return null
-        if (!s.contains("://")) {
+        val hasScheme = s.contains("://")
+        s = s.trimEnd('/')
+        if (!hasScheme) {
             if (!s.substringBefore('/').contains(':')) s = s.substringBefore('/') + ":$DEFAULT_PORT"
             s = "http://$s"
         }
