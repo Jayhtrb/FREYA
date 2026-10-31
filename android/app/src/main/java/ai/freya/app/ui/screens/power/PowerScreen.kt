@@ -5,9 +5,12 @@ import ai.freya.app.data.remote.dto.KeysStatusDto
 import ai.freya.app.ui.components.ErrorState
 import ai.freya.app.ui.components.FreyaEmblem
 import ai.freya.app.ui.components.LoadingState
-import ai.freya.app.ui.theme.CyanGlow
-import ai.freya.app.ui.theme.ElectricViolet
-import ai.freya.app.ui.theme.SuccessGreen
+import ai.freya.app.ui.components.NeuStyle
+import ai.freya.app.ui.components.NeumorphicButton
+import ai.freya.app.ui.components.NeumorphicField
+import ai.freya.app.ui.components.neumorphic
+import ai.freya.app.ui.theme.FreyaTheme
+import ai.freya.app.ui.theme.Radius
 import android.app.Application
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -32,16 +35,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -210,45 +209,40 @@ fun PowerScreen(onBack: () -> Unit) {
                     ProviderChips(status)
                     Spacer(Modifier.height(20.dp))
 
-                    OutlinedTextField(
+                    NeumorphicField(
                         value = deepseek,
                         onValueChange = { deepseek = it },
-                        label = { Text("DeepSeek API key") },
-                        singleLine = true,
+                        placeholder = "DeepSeek API key",
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    NeumorphicField(
                         value = llm,
                         onValueChange = { llm = it },
-                        label = { Text("LLM API key") },
-                        singleLine = true,
+                        placeholder = "LLM API key",
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    NeumorphicField(
                         value = llmBaseUrl,
                         onValueChange = { llmBaseUrl = it },
-                        label = { Text("LLM base URL (optional)") },
-                        singleLine = true,
+                        placeholder = "LLM base URL (optional)",
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    NeumorphicField(
                         value = llmModel,
                         onValueChange = { llmModel = it },
-                        label = { Text("LLM model") },
-                        singleLine = true,
+                        placeholder = "LLM model",
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
+                    NeumorphicField(
                         value = zep,
                         onValueChange = { zep = it },
-                        label = { Text("Zep API key") },
-                        singleLine = true,
+                        placeholder = "Zep API key",
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -263,13 +257,13 @@ fun PowerScreen(onBack: () -> Unit) {
                     }
 
                     Spacer(Modifier.height(20.dp))
-                    Button(
+                    NeumorphicButton(
+                        label = if (saving) "Igniting…" else "Ignite",
                         onClick = { vm.save(deepseek, llm, llmBaseUrl, llmModel, zep) },
                         enabled = !saving && !clearing,
+                        tint = FreyaTheme.colors.violet,
                         modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(if (saving) "Igniting…" else "Ignite")
-                    }
+                    )
                     Spacer(Modifier.height(8.dp))
                     TextButton(
                         onClick = { vm.clear() },
@@ -296,85 +290,82 @@ private fun ProviderChips(status: KeysStatusDto?) {
 
 @Composable
 private fun ProviderChip(name: String, configured: Boolean) {
-    val dot = if (configured) SuccessGreen else MaterialTheme.colorScheme.outlineVariant
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+    val c = FreyaTheme.colors
+    val dot = if (configured) c.success else MaterialTheme.colorScheme.outlineVariant
+    Row(
+        modifier = Modifier
+            .neumorphic(Radius.pill, NeuStyle.Flat, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(dot)
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = "$name ${if (configured) "configured" else "not set"}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(dot)
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = "$name ${if (configured) "configured" else "not set"}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 /**
- * A cheap, non-blocking holographic core: dim/grey when no keys are set and
- * ignited (violet glow + cyan ring + lit emblem) once keys are saved.
+ * A cheap, non-blocking neumorphic core: a raised orb in a sunken well. Dim and
+ * still when no keys are set; when ignited it breathes gently and gains a muted
+ * violet accent ring. No glow, blur, or trails.
  */
 @Composable
 private fun CoreOrb(ignited: Boolean, modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "core")
-    val pulse by transition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "corePulse",
-    )
-
-    val glowAlpha by animateFloatAsState(
-        targetValue = if (ignited) 0.45f else 0.12f,
+    val c = FreyaTheme.colors
+    val reduce = FreyaTheme.motion.reduceMotion
+    val accent by animateColorAsState(
+        targetValue = if (ignited) c.violet else MaterialTheme.colorScheme.outlineVariant,
         animationSpec = tween(700),
-        label = "glowAlpha",
-    )
-    val glowColor by animateColorAsState(
-        targetValue = if (ignited) ElectricViolet else MaterialTheme.colorScheme.outlineVariant,
-        animationSpec = tween(700),
-        label = "glowColor",
+        label = "accent",
     )
     val emblemAlpha by animateFloatAsState(
         targetValue = if (ignited) 1f else 0.5f,
         animationSpec = tween(700),
         label = "emblemAlpha",
     )
-    val ringAlpha by animateFloatAsState(
-        targetValue = if (ignited) 0.65f else 0f,
-        animationSpec = tween(700),
-        label = "ringAlpha",
+    val transition = rememberInfiniteTransition(label = "core")
+    val pulse by transition.animateFloat(
+        initialValue = 0.97f,
+        targetValue = 1.03f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "corePulse",
     )
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // Sunken well.
         Box(
-            modifier = Modifier
-                .size(140.dp)
-                .scale(if (ignited) pulse else 1f)
-                .clip(CircleShape)
-                .background(glowColor.copy(alpha = glowAlpha))
+            Modifier
+                .size(156.dp)
+                .neumorphic(CircleShape, NeuStyle.Sunken, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
         )
+        // Raised orb (breathing only when ignited and motion is allowed).
         Box(
-            modifier = Modifier
-                .size(164.dp)
-                .border(2.dp, CyanGlow.copy(alpha = ringAlpha), CircleShape)
+            Modifier
+                .size(112.dp)
+                .scale(if (ignited && !reduce) pulse else 1f)
+                .neumorphic(CircleShape, NeuStyle.Raised, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
+        )
+        // Muted accent ring.
+        Box(
+            Modifier
+                .size(102.dp)
+                .border(2.dp, accent.copy(alpha = if (ignited) 0.65f else 0.22f), CircleShape)
         )
         FreyaEmblem(
             modifier = Modifier
-                .size(72.dp)
+                .size(60.dp)
                 .alpha(emblemAlpha),
             contentDescription = if (ignited) "FREYA core ignited" else "FREYA core offline",
         )

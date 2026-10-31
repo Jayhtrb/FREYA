@@ -56,32 +56,34 @@ data class CorePalette(
     }
 
     companion object {
-        private val Cyan = Color(0xFF4FE3FF)
-        private val Ice = Color(0xFFD4F4FF)
-        private val IceBlue = Color(0xFF7FB8FF)
-        private val Electric = Color(0xFF3E8BFF)
-        private val Violet = Color(0xFF8E6BFF)
-        private val Magenta = Color(0xFFE25BFF)
+        // Muted, desaturated state accents — soft-UI, never neon.
+        private val Violet = Color(0xFF8B8FD0)
+        private val VioletDim = Color(0xFF7479BC)
+        private val Cyan = Color(0xFF5FA8C9)
+        private val Ice = Color(0xFFC9D6E0)
+        private val IceBlue = Color(0xFF9FB8C9)
+        private val Amber = Color(0xFFD9A96B)
+        private val Rose = Color(0xFFE08086)
 
         val Dark = CorePalette(
-            idle = StatePalette(primary = Electric, secondary = Cyan, accent = Violet, hot = Ice),
-            listening = StatePalette(primary = Cyan, secondary = Ice, accent = IceBlue, hot = Color(0xFFF0FBFF)),
-            processing = StatePalette(primary = Violet, secondary = Cyan, accent = Magenta, hot = Color(0xFFE9DDFF)),
-            tool = StatePalette(primary = Cyan, secondary = Violet, accent = Magenta, hot = Ice),
-            speaking = StatePalette(primary = Color(0xFF5AA8FF), secondary = Cyan, accent = Magenta, hot = Ice),
-            approval = StatePalette(primary = Color(0xFFC46BFF), secondary = Color(0xFFF1C8FF), accent = Violet, hot = Color(0xFFFBEFFF)),
-            error = StatePalette(primary = Color(0xFFFF4F86), secondary = Color(0xFFB8A9C9), accent = Violet, hot = Color(0xFFFFC2D4)),
+            idle = StatePalette(primary = Violet, secondary = Cyan, accent = Violet, hot = Ice),
+            listening = StatePalette(primary = Cyan, secondary = Ice, accent = Violet, hot = Color(0xFFDDE6EC)),
+            processing = StatePalette(primary = Violet, secondary = Cyan, accent = VioletDim, hot = Color(0xFFD5D8EE)),
+            tool = StatePalette(primary = Cyan, secondary = Violet, accent = VioletDim, hot = Ice),
+            speaking = StatePalette(primary = Cyan, secondary = Violet, accent = VioletDim, hot = Color(0xFFDDE6EC)),
+            approval = StatePalette(primary = Amber, secondary = Color(0xFFE3C18F), accent = Violet, hot = Color(0xFFF0E0C8)),
+            error = StatePalette(primary = Rose, secondary = Color(0xFFC4B8C4), accent = Violet, hot = Color(0xFFEAC4C8)),
         )
 
-        /** Light theme keeps the hues but deepens them so light-on-light stays visible. */
+        /** Light theme deepens the same muted hues so they stay visible on light. */
         val Light = CorePalette(
-            idle = StatePalette(Color(0xFF1F5FD6), Color(0xFF0088B0), Color(0xFF5B3FD0), Color(0xFF0B3A8F)),
-            listening = StatePalette(Color(0xFF0088B0), Color(0xFF1F5FD6), Color(0xFF5B3FD0), Color(0xFF00506A)),
-            processing = StatePalette(Color(0xFF5B3FD0), Color(0xFF0088B0), Color(0xFFA02FC8), Color(0xFF331F8A)),
-            tool = StatePalette(Color(0xFF0088B0), Color(0xFF5B3FD0), Color(0xFFA02FC8), Color(0xFF00506A)),
-            speaking = StatePalette(Color(0xFF1F5FD6), Color(0xFF0088B0), Color(0xFFA02FC8), Color(0xFF0B3A8F)),
-            approval = StatePalette(Color(0xFF8E2FC8), Color(0xFFB45FE0), Color(0xFF5B3FD0), Color(0xFF55127A)),
-            error = StatePalette(Color(0xFFC8245A), Color(0xFF8A7A9C), Color(0xFF5B3FD0), Color(0xFF7A0F33)),
+            idle = StatePalette(Color(0xFF6C6FB8), Color(0xFF4C90A8), Color(0xFF6C6FB8), Color(0xFF3A4A6B)),
+            listening = StatePalette(Color(0xFF4C90A8), Color(0xFF6C6FB8), Color(0xFF6C6FB8), Color(0xFF2C4A5A)),
+            processing = StatePalette(Color(0xFF6C6FB8), Color(0xFF4C90A8), Color(0xFF5A4FB0), Color(0xFF3A2E6E)),
+            tool = StatePalette(Color(0xFF4C90A8), Color(0xFF6C6FB8), Color(0xFF5A4FB0), Color(0xFF2C4A5A)),
+            speaking = StatePalette(Color(0xFF4C90A8), Color(0xFF6C6FB8), Color(0xFF5A4FB0), Color(0xFF2C4A5A)),
+            approval = StatePalette(Color(0xFFB0803C), Color(0xFFC79A5A), Color(0xFF6C6FB8), Color(0xFF5A4A1E)),
+            error = StatePalette(Color(0xFFC25B63), Color(0xFF9A8A98), Color(0xFF6C6FB8), Color(0xFF5E2A30)),
         )
     }
 }

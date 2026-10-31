@@ -11,6 +11,8 @@ import ai.freya.app.domain.model.MessageStatus
 import ai.freya.app.ui.components.FreyaHaptics
 import ai.freya.app.ui.components.GlassAction
 import ai.freya.app.ui.components.GlassPanel
+import ai.freya.app.ui.components.NeuStyle
+import ai.freya.app.ui.components.neumorphic
 import ai.freya.app.ui.components.rememberFreyaHaptics
 import ai.freya.app.ui.core.CoreAppearance
 import ai.freya.app.ui.core.FreyaCore
@@ -411,9 +413,7 @@ private fun HomeHeader(
         }
         Row(
             Modifier
-                .clip(Radius.pill)
-                .background(c.glassFill)
-                .border(1.dp, c.glassBorder, Radius.pill)
+                .neumorphic(Radius.pill, NeuStyle.Flat, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
                 .padding(horizontal = 12.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -580,13 +580,7 @@ private fun CommandBar(
             .fillMaxWidth()
             .padding(horizontal = Space.lg, vertical = Space.xs)
             .heightIn(min = 54.dp)
-            .clip(Radius.pill)
-            .background(c.glassFill)
-            .border(
-                1.dp,
-                Brush.horizontalGradient(listOf(c.cyan.copy(alpha = 0.55f), c.violet.copy(alpha = 0.55f))),
-                Radius.pill,
-            )
+            .neumorphic(Radius.pill, NeuStyle.Sunken, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
             .padding(start = 20.dp, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

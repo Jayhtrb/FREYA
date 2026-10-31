@@ -52,13 +52,13 @@ fun FreyaCore(
     compact: Boolean = false,
     animate: Boolean = true,
 ) {
-    val isDark = FreyaTheme.colors.isDark
+    val colors = FreyaTheme.colors
+    val isDark = colors.isDark
     val reduce = FreyaTheme.motion.reduceMotion || !animate
     val resolved = remember(appearance, isDark) {
         if (isDark) appearance else appearance.copy(palette = CorePalette.Light)
     }
     val engine = remember(resolved) { CoreEngine(resolved) }
-    val cache = remember { CoreCache() }
     val frame = remember { mutableIntStateOf(0) }
 
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
@@ -121,6 +121,13 @@ fun FreyaCore(
             },
     ) {
         frame.intValue // read in draw: each engine step invalidates only this draw pass
-        drawFreyaCore(engine, cache, additive = isDark, compact = compact)
+        drawFreyaCore(
+            engine,
+            compact = compact,
+            surface = colors.surface,
+            sunken = colors.sunken,
+            highlight = colors.neuHighlight,
+            shadow = colors.neuShadow,
+        )
     }
 }

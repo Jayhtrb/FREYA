@@ -4,6 +4,8 @@ import ai.freya.app.FreyaApplication
 import ai.freya.app.domain.ToolPolicy
 import ai.freya.app.ui.components.ApprovalSheet
 import ai.freya.app.ui.components.FreyaBackdrop
+import ai.freya.app.ui.components.NeuStyle
+import ai.freya.app.ui.components.neumorphic
 import ai.freya.app.ui.navigation.Routes
 import ai.freya.app.ui.screens.auth.LoginScreen
 import ai.freya.app.ui.screens.auth.RegisterScreen
@@ -241,9 +243,7 @@ private fun SessionOverlays(showTaskPill: Boolean, modifier: Modifier) {
     ) {
         Row(
             Modifier
-                .clip(Radius.pill)
-                .background(if (c.isDark) Color(0xF00E1222) else Color(0xF0FFFFFF))
-                .border(1.dp, c.ice.copy(alpha = 0.5f), Radius.pill)
+                .neumorphic(Radius.pill, NeuStyle.Raised, c.surface, c.sunken, c.neuHighlight, c.neuShadow)
                 .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -275,8 +275,8 @@ private fun FreyaBottomBar(navController: NavHostController, currentRoute: Strin
         BottomNavItem(Routes.CONTROL, "Tools", Icons.Outlined.GridView),
         BottomNavItem(Routes.SETTINGS, "Settings", Icons.Outlined.Settings),
     )
-    Column(Modifier.fillMaxWidth().background(if (c.isDark) Color(0x99050710) else Color(0xCCFFFFFF)).navigationBarsPadding()) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, c.glassBorder, Color.Transparent))))
+    Column(Modifier.fillMaxWidth().background(c.surface).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(c.neuShadow.copy(alpha = 0.35f)))
         Row(Modifier.fillMaxWidth().height(64.dp), verticalAlignment = Alignment.CenterVertically) {
             items.forEach { item ->
                 val isSelected = currentRoute == item.route

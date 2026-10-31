@@ -3,9 +3,10 @@ package ai.freya.app.ui.screens.auth
 import ai.freya.app.domain.CoreState
 import ai.freya.app.ui.core.CoreAppearance
 import ai.freya.app.ui.core.FreyaCore
-import androidx.compose.runtime.remember
 import ai.freya.app.domain.Persona
-import ai.freya.app.ui.components.FreyaEmblem
+import ai.freya.app.ui.components.NeumorphicButton
+import ai.freya.app.ui.components.NeumorphicField
+import ai.freya.app.ui.theme.FreyaTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -18,10 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,19 +56,17 @@ fun LoginScreen(
         title = "Sign in",
         subtitle = Persona.TAGLINE,
     ) {
-        OutlinedTextField(
+        NeumorphicField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            singleLine = true,
+            placeholder = "Email",
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        NeumorphicField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            singleLine = true,
+            placeholder = "Password",
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -85,21 +81,13 @@ fun LoginScreen(
         }
 
         Spacer(Modifier.height(20.dp))
-        Button(
+        NeumorphicButton(
+            label = if (loading) "Signing in…" else "Sign in",
             onClick = { vm.login(email, password) },
             enabled = !loading,
+            tint = FreyaTheme.colors.violet,
             modifier = Modifier.fillMaxWidth(),
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            } else {
-                Text("Sign in")
-            }
-        }
+        )
         TextButton(
             onClick = onGoToRegister,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -131,27 +119,24 @@ fun RegisterScreen(
         title = "Create account",
         subtitle = "Your intelligence, your world.",
     ) {
-        OutlinedTextField(
+        NeumorphicField(
             value = displayName,
             onValueChange = { displayName = it },
-            label = { Text("Display name") },
-            singleLine = true,
+            placeholder = "Display name",
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        NeumorphicField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            singleLine = true,
+            placeholder = "Email",
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
+        NeumorphicField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            singleLine = true,
+            placeholder = "Password",
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -166,21 +151,13 @@ fun RegisterScreen(
         }
 
         Spacer(Modifier.height(20.dp))
-        Button(
+        NeumorphicButton(
+            label = if (loading) "Creating…" else "Create account",
             onClick = { vm.register(email, password, displayName) },
             enabled = !loading,
+            tint = FreyaTheme.colors.violet,
             modifier = Modifier.fillMaxWidth(),
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            } else {
-                Text("Create account")
-            }
-        }
+        )
         TextButton(
             onClick = onBackToLogin,
             modifier = Modifier.align(Alignment.CenterHorizontally),

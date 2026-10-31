@@ -10,6 +10,10 @@ import ai.freya.app.domain.model.MemoryPreference
 import ai.freya.app.ui.components.EmptyState
 import ai.freya.app.ui.components.ErrorState
 import ai.freya.app.ui.components.LoadingState
+import ai.freya.app.ui.components.NeumorphicButton
+import ai.freya.app.ui.components.NeumorphicCard
+import ai.freya.app.ui.components.NeumorphicField
+import ai.freya.app.ui.theme.FreyaTheme
 import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -189,7 +193,7 @@ fun SettingsScreen(
             Text("Settings", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(12.dp))
 
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            NeumorphicCard {
                 Column(Modifier.padding(16.dp)) {
                     Text(user?.displayName ?: "Account", style = MaterialTheme.typography.titleMedium)
                     Text(
@@ -227,27 +231,24 @@ fun SettingsScreen(
             Spacer(Modifier.height(16.dp))
             Text("Personality & model", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
+            NeumorphicField(
                 value = personalityEdit,
                 onValueChange = { personalityEdit = it },
-                label = { Text("Personality") },
-                singleLine = true,
+                placeholder = "Personality",
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            NeumorphicField(
                 value = modelEdit,
                 onValueChange = { modelEdit = it },
-                label = { Text("Model") },
-                singleLine = true,
+                placeholder = "Model",
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
+            NeumorphicField(
                 value = voiceEdit,
                 onValueChange = { voiceEdit = it },
-                label = { Text("Voice provider") },
-                singleLine = true,
+                placeholder = "Voice provider",
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -293,13 +294,13 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-            Button(
+            NeumorphicButton(
+                label = if (saving) "Saving…" else "Save settings",
                 onClick = { vm.save(personalityEdit, modelEdit, voiceEdit) },
                 enabled = !saving,
+                tint = FreyaTheme.colors.violet,
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(if (saving) "Saving…" else "Save settings")
-            }
+            )
 
             Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = onOpenControlCenter, modifier = Modifier.fillMaxWidth()) {

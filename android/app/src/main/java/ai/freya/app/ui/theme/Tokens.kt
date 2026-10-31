@@ -24,11 +24,35 @@ object Space {
 }
 
 object Radius {
-    val chip = RoundedCornerShape(10.dp)
-    val control = RoundedCornerShape(14.dp)
-    val panel = RoundedCornerShape(22.dp)
+    val chip = RoundedCornerShape(12.dp)
+    val control = RoundedCornerShape(16.dp)
+    val card = RoundedCornerShape(20.dp)
+    val panel = RoundedCornerShape(24.dp)
     val sheet = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     val pill = RoundedCornerShape(50)
+}
+
+/**
+ * Neumorphic shadow spec. Soft-UI depth is drawn as two offset shadows of the
+ * background colour: a light highlight (top-left) and a dark shadow (bottom-right).
+ * Levels map to progressively larger offsets/softness; the renderer uses
+ * [raised]/[sunken] to pick the direction, [Modifier.shadow] supplies the softness.
+ */
+object Neumorphic {
+    data class ShadowSpec(
+        val offset: androidx.compose.ui.unit.Dp,
+        val softness: androidx.compose.ui.unit.Dp,
+    )
+
+    /** Raised element: light shadow up-left, dark shadow down-right. */
+    val raised = ShadowSpec(offset = 5.dp, softness = 9.dp)
+
+    /** Pressed / inset element: shadows inverted and inside the surface. */
+    val sunken = ShadowSpec(offset = 3.dp, softness = 5.dp)
+
+    /** Soft elevation radius used by the raised-surface [androidx.compose.ui.draw.shadow]. */
+    val raisedElevation = 6.dp
+    val flatElevation = 0.dp
 }
 
 /**

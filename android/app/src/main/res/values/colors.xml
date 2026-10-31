@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window background used before Compose draws (kept dark to avoid a flash). -->
-    <color name="background">#05060B</color>
-    <color name="ic_launcher_background">#05060B</color>
+    <!-- Window background used before Compose draws (matches the neumorphic surface). -->
+    <color name="background">#23262E</color>
+    <color name="ic_launcher_background">#23262E</color>
 </resources>

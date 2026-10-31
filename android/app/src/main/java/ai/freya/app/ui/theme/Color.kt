@@ -3,54 +3,72 @@ package ai.freya.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /*
- * FREYA colour tokens.
+ * FREYA neumorphic (soft-UI) colour tokens.
  *
- * The dark palette is the primary experience: near-black "void" with a
- * midnight-blue lift, and three restrained accents (violet, cyan, ice).
- * Accents are used for light and state, never as large fills. All text/surface
- * pairs below were chosen to clear WCAG AA (4.5:1) for body text.
+ * Depth comes from dual shadows on surfaces that are the SAME colour as the
+ * background — a light highlight top-left and a dark shadow bottom-right — not
+ * from glass, blur, neon glow or high-contrast fills. One muted accent
+ * (desaturated violet) plus a muted cyan for "speaking"; amber/red/green are
+ * kept but desaturated. Accents are used for small states only, never as large
+ * fills. All text/surface pairs clear WCAG AA (4.5:1).
  */
 
-// ---- Dark base ----
-val Void = Color(0xFF05060B)            // window / deepest background
-val Abyss = Color(0xFF080B16)           // backdrop gradient end
-val Midnight = Color(0xFF0C1226)        // midnight-blue lift behind the core
-val Charcoal900 = Color(0xFF0A0C14)     // kept for older references
-val Midnight800 = Color(0xFF10141F)     // surface
-val Midnight700 = Color(0xFF161B2A)     // raised surface
-val Midnight600 = Color(0xFF222838)     // outline variant
+// ---- Dark neumorphic base (surface == background) ----
+val NeuSurfaceDark = Color(0xFF23262E)   // surface / background
+val NeuSunkenDark = Color(0xFF1C1F26)    // inset wells & inputs
+val NeuHighlightDark = Color(0xFF3A3F4B) // light shadow (top-left)
+val NeuShadowDark = Color(0xFF15171D)    // dark shadow (bottom-right)
 
-// ---- Glass (translucent panels drawn over the backdrop) ----
-val GlassFill = Color(0x14A9B8FF)       // ~8% icy tint
-val GlassFillStrong = Color(0x24A9B8FF) // ~14% for pressed / selected
-val GlassBorder = Color(0x2EBFD0FF)     // ~18% hairline
-val GlassHighlight = Color(0x1FFFFFFF)  // top-edge sheen
+// Kept names, remapped to the neumorphic ramp (referenced across the app).
+val Void = NeuSurfaceDark
+val Abyss = Color(0xFF23262E)
+val Midnight = Color(0xFF262A33)
+val Charcoal900 = NeuSurfaceDark
+val Midnight800 = NeuSurfaceDark
+val Midnight700 = Color(0xFF2A2E38)
+val Midnight600 = Color(0xFF313641)
 
-// ---- Accents ----
-val ElectricViolet = Color(0xFF9A8CFF)
-val ElectricVioletDim = Color(0xFF6C5CE7)
-val CyanGlow = Color(0xFF6FE3FF)
-val CyanDim = Color(0xFF2FA9C4)
-val IceBlue = Color(0xFFCFE8FF)
+// ---- Glass tokens: retained for API compatibility, aliased to surfaces ----
+val GlassFill = NeuSurfaceDark
+val GlassFillStrong = NeuSunkenDark
+val GlassBorder = NeuHighlightDark
+val GlassHighlight = Color(0xFF4A505E)
+
+// ---- Muted accents ----
+val ElectricViolet = Color(0xFF8B8FD0)     // desaturated violet accent
+val ElectricVioletDim = Color(0xFF7479BC)
+val CyanGlow = Color(0xFF5FA8C9)           // muted cyan (speaking)
+val CyanDim = Color(0xFF4C90A8)
+val IceBlue = Color(0xFF9FB8C9)
 
 // ---- Text (dark) ----
-val TextPrimaryDark = Color(0xFFEEF1FA)
-val TextSecondaryDark = Color(0xFFAEB6CC)
-val TextMutedDark = Color(0xFF7F88A3)
+val TextPrimaryDark = Color(0xFFDDE2EC)
+val TextSecondaryDark = Color(0xFF9BA3B4)
+val TextMutedDark = Color(0xFF79808F)
 
-// ---- Semantic state colours ----
-val ApprovalAmber = Color(0xFFFFC46B)
-val ErrorRed = Color(0xFFFF6B72)
-val SuccessGreen = Color(0xFF4FD18B)
+// ---- Semantic (desaturated) ----
+val ApprovalAmber = Color(0xFFD9A96B)
+val ErrorRed = Color(0xFFE08086)
+val SuccessGreen = Color(0xFF7BBE96)
 
-// ---- Light palette (optional theme; keeps the same hues, inverted luminance) ----
-val BackgroundLight = Color(0xFFF3F5FB)
-val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFE6EAF5)
-val VioletLight = Color(0xFF5141C9)
-val CyanLight = Color(0xFF00788F)
-val TextPrimaryLight = Color(0xFF111522)
-val TextSecondaryLight = Color(0xFF465069)
-val TextMutedLight = Color(0xFF6D7690)
-val GlassFillLight = Color(0x99FFFFFF)
-val GlassBorderLight = Color(0x1F1B2A55)
+// ---- Light neumorphic base ----
+val NeuSurfaceLight = Color(0xFFE4E9F0)   // surface / background
+val NeuSunkenLight = Color(0xFFD7DDE7)    // inset wells & inputs
+val NeuHighlightLight = Color(0xFFFFFFFF) // light shadow
+val NeuShadowLight = Color(0xFFB9C0CE)    // dark shadow
+
+val BackgroundLight = NeuSurfaceLight
+val SurfaceLight = NeuSurfaceLight
+val SurfaceVariantLight = NeuSunkenLight
+val VioletLight = Color(0xFF6C6FB8)
+val CyanLight = Color(0xFF4C90A8)
+val TextPrimaryLight = Color(0xFF454B59)
+val TextSecondaryLight = Color(0xFF6E7686)
+val TextMutedLight = Color(0xFF848B9B)
+val GlassFillLight = NeuSurfaceLight
+val GlassBorderLight = NeuShadowLight
+
+// ---- Semantic (light, desaturated) ----
+val ErrorRedLight = Color(0xFFC25B63)
+val SuccessGreenLight = Color(0xFF5E9B77)
+val ApprovalAmberLight = Color(0xFFB0803C)
