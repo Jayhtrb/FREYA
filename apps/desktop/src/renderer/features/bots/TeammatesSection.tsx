@@ -4,6 +4,7 @@ import { TeammateStatusDot } from './TeammateStatusDot';
 import { localTeammateStatus, remoteTeammateStatus, groupTeammateStatus } from './teammateRosterStatus';
 import { BotGenerationLabel } from './BotGenerationLabel';
 import { botRosterLabel } from '../../../shared/botCreation';
+import { isBotTemplatePresetId } from '../../../shared/botTemplatePreset';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import {
   AlertTriangle,
@@ -428,7 +429,7 @@ export function TeammatesSection() {
           <EyeOff size={14} className="mr-2" />
           {t('bots.list.hide')}
         </DropdownMenuItem>
-        {bot.templateId !== 'cindy' && (
+        {!isBotTemplatePresetId(bot.templateId) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem

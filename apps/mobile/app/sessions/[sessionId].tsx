@@ -11297,12 +11297,12 @@ function SessionScreenContent({ beforeSessionSwitchRef, newSessionActionRef }: S
                   ) : null}
                 </View>
               ) : null}
-              {companionChat && companionResource?.ref.id === 'cindy-default'
+              {companionChat && companionResource && (companionResource.ref.id === 'cindy-default' || companionResource.ref.id === 'freya-default')
                 && companionResource.links.some(
                           (link) => link.rel === 'conversation' && link.target.kind === 'session' && link.target.sessionId === sessionId)
                 && followUpEngaged === followUpScope && !remoteSessionRunning && !isSessionStreaming
                 && pending.length === 0 && !shareSelectionActive && !remoteUnavailableReason ? (
-                <CompanionFollowUpInvitation key={followUpScope} deviceId={deviceId} deviceName={deviceName} botId="cindy-default" />
+                <CompanionFollowUpInvitation key={followUpScope} deviceId={deviceId} deviceName={deviceName} botId={companionResource.ref.id} />
               ) : null}
               {/* Desktop BotWorkingStatus: a teammate's paced public status stays above the composer,
                   also while the user reads older messages. Interactions carry their own panel. */}

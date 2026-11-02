@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOT_TEMPLATE_PRESET_IDENTITIES, CINDY_DEFAULT_IDENTITY, inferBotTemplatePresetId, BOT_TEMPLATE_PRESET_IDS, isBotTemplatePresetId } from '../botTemplatePreset';
+import { BOT_TEMPLATE_PRESET_IDENTITIES, CINDY_DEFAULT_IDENTITY, FREYA_DEFAULT_IDENTITY, inferBotTemplatePresetId, BOT_TEMPLATE_PRESET_IDS, isBotTemplatePresetId } from '../botTemplatePreset';
 
 // Persisted before the inline-first default; recognition must survive template changes.
 const previousDefaultIdentity = [
@@ -12,18 +12,20 @@ const previousDefaultIdentity = [
 describe('Cindy identity compatibility', () => {
   it('recognizes shipped default identities after the template changes', () => {
     expect(inferBotTemplatePresetId(BOT_TEMPLATE_PRESET_IDENTITIES.cindy)).toBe('cindy');
+    expect(inferBotTemplatePresetId(BOT_TEMPLATE_PRESET_IDENTITIES.freya)).toBe('freya');
     expect(inferBotTemplatePresetId(CINDY_DEFAULT_IDENTITY)).toBe('cindy');
+    expect(inferBotTemplatePresetId(FREYA_DEFAULT_IDENTITY)).toBe('freya');
     expect(inferBotTemplatePresetId(previousDefaultIdentity)).toBe('cindy');
   });
   it('never infers a template after the user customizes any default identity', () => {
-    for (const identity of [BOT_TEMPLATE_PRESET_IDENTITIES.cindy, previousDefaultIdentity, CINDY_DEFAULT_IDENTITY]) {
+    for (const identity of [BOT_TEMPLATE_PRESET_IDENTITIES.cindy, BOT_TEMPLATE_PRESET_IDENTITIES.freya, previousDefaultIdentity, CINDY_DEFAULT_IDENTITY, FREYA_DEFAULT_IDENTITY]) {
       expect(inferBotTemplatePresetId(identity + '\nMy own instructions')).toBeNull();
     }
   });
 });
 
-it('only offers Cindy; retired role names no longer resolve to templates', () => {
-  expect(BOT_TEMPLATE_PRESET_IDS).toEqual(['cindy']);
+it('offers Cindy and FREYA; retired role names no longer resolve to templates', () => {
+  expect(BOT_TEMPLATE_PRESET_IDS).toEqual(['cindy', 'freya']);
   expect(isBotTemplatePresetId('dash')).toBe(false);
   expect(isBotTemplatePresetId('lizi')).toBe(false);
 });

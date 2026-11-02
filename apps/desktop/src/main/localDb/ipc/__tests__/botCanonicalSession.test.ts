@@ -888,7 +888,7 @@ describe('Bot canonical Session lifecycle', () => {
       setMainLocale('en');
       vi.mocked(provisionDefaultBot).mockImplementationOnce(async input => { await input.create(); });
       await invoke('local-db:bots:list', { locale });
-      const row = h.sqlite!.prepare('SELECT capabilities_json FROM bot_profile_versions WHERE bot_id = ? AND version = 1').get('cindy-default') as { capabilities_json: string };
+      const row = h.sqlite!.prepare('SELECT capabilities_json FROM bot_profile_versions WHERE bot_id = ? AND version = 1').get('freya-default') as { capabilities_json: string };
       expect(JSON.parse(row.capabilities_json).invitation.locale).toBe(locale);
     },
   );
@@ -913,11 +913,11 @@ describe('Bot canonical Session lifecycle', () => {
     },
   );
 
-  it('passes the cached background into first-time default Cindy provisioning', async () => {
+  it('passes the cached background into first-time default FREYA provisioning', async () => {
     vi.mocked(provisionDefaultBot).mockImplementationOnce(async input => { await input.create(); });
     const welcomeContext = { projects: ['Puzzle Studio'], tasks: [], automations: ['Daily issue triage'] };
     await invoke('local-db:bots:list', { welcomeContext });
-    const row = h.sqlite!.prepare('SELECT capabilities_json FROM bot_profile_versions WHERE bot_id = ? AND version = 1').get('cindy-default') as { capabilities_json: string };
+    const row = h.sqlite!.prepare('SELECT capabilities_json FROM bot_profile_versions WHERE bot_id = ? AND version = 1').get('freya-default') as { capabilities_json: string };
     expect(JSON.parse(row.capabilities_json).invitation.welcomeContext).toEqual(welcomeContext);
   });
 
@@ -1767,7 +1767,7 @@ describe('Bot canonical Session lifecycle', () => {
       .all(createHash('sha256').update(bytes).digest('hex'))).toEqual([{ ref_id: copy.id }]);
   });
 
-  it.each(['legacy IPC', 'resource registry'])('provides Cindy on first Mobile entry via %s and shares the receipt after deletion', async entry => {
+  it.each(['legacy IPC', 'resource registry'])('provides FREYA on first Mobile entry via %s and shares the receipt after deletion', async entry => {
     const real = await vi.importActual<typeof import('../../../maker-ipc/botDefaultProvisioning')>(
       '../../../maker-ipc/botDefaultProvisioning');
     vi.mocked(provisionDefaultBot).mockImplementation(real.provisionDefaultBot);
@@ -1788,7 +1788,7 @@ describe('Bot canonical Session lifecycle', () => {
       return result.items.map(item => ({ id: item.ref.id, name: item.display.title }));
     };
     const first = await mobileList();
-    expect(first).toEqual([expect.objectContaining({ id: 'cindy-default', name: 'Cindy' })]);
+    expect(first).toEqual([expect.objectContaining({ id: 'freya-default', name: 'FREYA' })]);
     expect(first[0]).not.toHaveProperty('identitySource');
     await invoke('local-db:bots:list', undefined);
     expect(h.sqlite!.prepare('SELECT COUNT(*) AS n FROM bot_profiles').get()).toEqual({ n: 1 });
@@ -1798,7 +1798,7 @@ describe('Bot canonical Session lifecycle', () => {
     await expect(invoke('local-db:bots:list', undefined)).resolves.toEqual([]);
   });
 
-  it.each(['legacy IPC', 'resource registry'])('queues committed Cindy before a failed projection on first %s entry', async (entry) => {
+  it.each(['legacy IPC', 'resource registry'])('queues committed FREYA before a failed projection on first %s entry', async (entry) => {
     const real = await vi.importActual<typeof import('../../../maker-ipc/botDefaultProvisioning')>(
       '../../../maker-ipc/botDefaultProvisioning');
     vi.mocked(provisionDefaultBot).mockImplementation(real.provisionDefaultBot);
@@ -1808,10 +1808,10 @@ describe('Bot canonical Session lifecycle', () => {
     const queued = vi.spyOn(invitation, 'queueBotInvitation').mockImplementation(() => {});
     let projectionFailed = false;
     h.listProviders.mockImplementation(async () => {
-      if (!projectionFailed && h.sqlite!.prepare("SELECT id FROM bot_profiles WHERE id = 'cindy-default'").get()) {
+      if (!projectionFailed && h.sqlite!.prepare("SELECT id FROM bot_profiles WHERE id = 'freya-default'").get()) {
         // A provider read after the create transaction, before the presentation
         // can complete. The invitation must already be queued at this point.
-        expect(queued).toHaveBeenCalledWith('cindy-default', expect.any(Object), false);
+        expect(queued).toHaveBeenCalledWith('freya-default', expect.any(Object), false);
         projectionFailed = true;
         throw new Error('Temporary provider projection failure');
       }
@@ -1822,14 +1822,14 @@ describe('Bot canonical Session lifecycle', () => {
         { controllerDeviceId: 'mobile-first', channel: 'local-db:bots:list' },
         () => invoke('local-db:bots:list', undefined),
       ) : listBotRemoteResourceSources;
-      expect((await list()).map(row => row.id)).toEqual(['cindy-default']);
+      expect((await list()).map(row => row.id)).toEqual(['freya-default']);
       expect(projectionFailed).toBe(true);
       expect(queued).toHaveBeenCalledTimes(1);
-      const stored = h.sqlite!.prepare("SELECT capabilities_json AS config FROM bot_profile_versions WHERE bot_id = 'cindy-default'").get() as { config: string };
+      const stored = h.sqlite!.prepare("SELECT capabilities_json AS config FROM bot_profile_versions WHERE bot_id = 'freya-default'").get() as { config: string };
       expect(JSON.parse(stored.config).invitation).toMatchObject({ stage: 'skills' });
       // A second remote read only sees durable history. It must not be needed
       // to repair the lost queue entry, or create a second default teammate.
-      expect((await list()).map(row => row.id)).toEqual(['cindy-default']);
+      expect((await list()).map(row => row.id)).toEqual(['freya-default']);
       expect(queued).toHaveBeenCalledTimes(1);
     } finally {
       queued.mockRestore();

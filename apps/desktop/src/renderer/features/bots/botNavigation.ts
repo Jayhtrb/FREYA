@@ -7,7 +7,9 @@ export function botEntryTarget(bots: readonly BotProfile[], lastBotId?: string):
   const remembered = available.find(bot => bot.id === lastBotId);
   if (remembered) return remembered;
   const byCreation = [...available].sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
-  return byCreation.find(bot => bot.templateId === 'cindy')
+  // FREYA is the new default companion; legacy installs keep the Cindy preset.
+  return byCreation.find(bot => bot.templateId === 'freya')
+    ?? byCreation.find(bot => bot.templateId === 'cindy')
     ?? byCreation[0]
     ?? null;
 }

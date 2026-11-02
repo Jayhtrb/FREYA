@@ -57,8 +57,8 @@ export function teammateRoutineReviewIntent(scheduleId: string | undefined, pers
   return routineInstructionFromPrompt(prompt);
 }
 
-/** 出厂 Cindy 助理的稳定 id；仅用于邀请入口，不意味着已开启自动跟进。 */
-export const DEFAULT_SCHEDULER_BOT_ID = 'cindy-default';
+/** 出厂默认伙伴（FREYA）的稳定 id；仅用于邀请入口，不意味着已开启自动跟进。 */
+export const DEFAULT_SCHEDULER_BOT_ID = 'freya-default';
 
 /** 程序级阈值（内部常量，不进设置）。 */
 export const AUTONOMY_THRESHOLDS = {

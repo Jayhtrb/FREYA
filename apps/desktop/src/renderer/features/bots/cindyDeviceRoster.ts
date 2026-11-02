@@ -1,6 +1,7 @@
 import { deviceDisplayName } from '@/lib/deviceName';
 import type { CompanionCloudSnapshot } from '../../../shared/companionCloud';
 import type { BotProfile } from './botStore';
+import { isBotTemplatePresetId } from '../../../shared/botTemplatePreset';
 import { isRemoteBotUnread, taskBotKey, type RemoteBot } from './remoteBotRoster';
 
 export type CindyDeviceBot = BotProfile | RemoteBot;
@@ -17,10 +18,10 @@ export interface CindyDeviceOption {
 }
 
 /** Names and avatars are editable, so neither can identify the built-in teammate.
- * Older remote rosters omit template IDs; their provisioned Cindy has this stable ID.
- * Unknown/custom profiles stay separate rather than disappearing into this group. */
+ * Older remote rosters omit template IDs; their provisioned companion has this stable ID.
+ * FREYA is the new default; the legacy Cindy preset keeps its own stable ID. */
 export function isCindyDeviceBot(bot: { id: string; templateId?: string }): boolean {
-  return bot.templateId === 'cindy' || bot.id === 'cindy-default';
+  return isBotTemplatePresetId(bot.templateId) || bot.id === 'cindy-default' || bot.id === 'freya-default';
 }
 
 /** Task filtering follows the built-in teammate across computers, including historical tasks. */

@@ -38,6 +38,9 @@ const TODO_PREVIEW = 2;
 const TASK_PREVIEW = 5;
 const OUTPUT_PREVIEW = 3;
 const CINDY_BOT_ID = 'cindy-default';
+const FREYA_BOT_ID = 'freya-default';
+/** 出厂默认伙伴（新默认 FREYA，旧默认 Cindy）在多台电脑上各有一份拷贝。 */
+const isDefaultCompanionBotId = (id: string) => id === CINDY_BOT_ID || id === FREYA_BOT_ID;
 /** Header avatar (原型 56pt). */
 const HEADER_AVATAR = 56;
 /** Leading glyph column: rows with an icon start their text (and divider) after it. */
@@ -155,9 +158,9 @@ function Computers({ botId, deviceId, deviceName, online, cloudHome, onOpenCindy
   // Cindy runs a copy on each computer: the other copies come from the teammate list already read
   // on this phone (no extra discovery); other teammates only show the computer they run on.
   const copies = useMemo(() => {
-    if (cloudHome || botId !== CINDY_BOT_ID) return [];
+    if (cloudHome || !isDefaultCompanionBotId(botId)) return [];
     return readRemoteCollectionCache(`${user?.id ?? ''}:${accountGeneration}`, 'teammates')
-      .filter(row => row.item.ref.kind === 'bot' && row.item.ref.id === CINDY_BOT_ID && row.host.deviceId !== deviceId)
+      .filter(row => row.item.ref.kind === 'bot' && isDefaultCompanionBotId(row.item.ref.id) && row.host.deviceId !== deviceId)
       .map(row => ({ row, online: remoteResourceConnectionState(status, getPresenceAvailability(row.host.deviceId)) === true }));
   }, [accountGeneration, botId, cloudHome, deviceId, getPresenceAvailability, presenceVersion, status, user?.id]);
   const onlineCopies = copies.filter(copy => copy.online);

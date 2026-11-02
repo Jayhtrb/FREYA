@@ -10,7 +10,7 @@ import { botProfileModelSelectionChanged } from '../../../../shared/botModelChai
 import { dbToMakerAgentKind } from '../../../../shared/agentKindConversion.js';
 import { parseScheduledModelBaseline } from '../../../../shared/scheduledModelBaseline.js';
 import { normalizeBotName } from '../../../../shared/botCreation.js';
-import { inferBotTemplatePresetId } from '../../../../shared/botTemplatePreset.js';
+import { inferBotTemplatePresetId, isBotTemplatePresetId } from '../../../../shared/botTemplatePreset.js';
 // inproc 回滚口：仅在 XDT_DB_INPROC=true 时使用。
 // 默认热路径走 file worker（dbWorker.ts + dispatcher），这里要和同名 tx handler 保持一致。
 
@@ -342,7 +342,7 @@ function botsCreateProfile(db: Database.Database, args: unknown): void {
       FROM bot_profiles p JOIN bot_profile_versions v ON v.bot_id = p.id AND v.version = p.current_version
       WHERE p.status != 'archived'`).all() as Array<{ id: string; name: string; config: string; identity: string }>;
     if ((!allowDuplicateName && rows.some(row => normalizeBotName(row.name) === normalizeBotName(expectString(p.displayName, 'displayName')))) ||
-        (config.templateId === 'cindy' && rows.some(row => JSON.parse(row.config).templateId === 'cindy' || inferBotTemplatePresetId(row.identity) === 'cindy'))) {
+        (isBotTemplatePresetId(config.templateId) && rows.some(row => isBotTemplatePresetId(JSON.parse(row.config).templateId) || inferBotTemplatePresetId(row.identity) !== null))) {
       throw Object.assign(new Error('A matching companion already exists'), { code: 'ALREADY_EXISTS' });
     }
     db.prepare(`INSERT INTO bot_profiles

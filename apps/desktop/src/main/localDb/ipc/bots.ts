@@ -10,7 +10,7 @@ import type { TodoPatch } from '@cindy/maker-shared/teammate-todo';
  */
 import { listBotSkillsForBot } from '../../maker-ipc/botSkillService.js';
 import { provisionDefaultBot } from '../../maker-ipc/botDefaultProvisioning.js';
-import { BOT_TEMPLATE_PRESET_AVATARS, CINDY_DEFAULT_IDENTITY } from '../../../shared/botTemplatePreset.js';
+import { BOT_TEMPLATE_PRESET_AVATARS, CINDY_DEFAULT_IDENTITY, FREYA_DEFAULT_IDENTITY } from '../../../shared/botTemplatePreset.js';
 import fs from 'node:fs/promises';
 import { chooseAvatarSource } from '../../profileEdit.js';
 import { toSdrAvatarImage } from '../../hdrAvatarToSdr.js';
@@ -1617,8 +1617,8 @@ async function provisionDefaultBotForList(
         const history = await client.drizzle.select({ id: sessions.id }).from(sessions).where(eq(sessions.source, 'bot')).limit(1);
         return history.length > 0;
       },
-      create: () => createBotProfile({ id: 'cindy-default', name: 'Cindy', templateId: 'cindy',
-        avatar: BOT_TEMPLATE_PRESET_AVATARS.cindy, identitySource: CINDY_DEFAULT_IDENTITY,
+      create: () => createBotProfile({ id: 'freya-default', name: 'FREYA', templateId: 'freya',
+        avatar: BOT_TEMPLATE_PRESET_AVATARS.freya, identitySource: FREYA_DEFAULT_IDENTITY,
         prepareInvitation: true, welcomeContext, locale }),
     });
   } catch (error) {
@@ -1934,7 +1934,7 @@ export async function createBotProfile(raw: unknown, restored?: RestoredBotOrigi
   const existingIds = await db.select({ id: botProfiles.id }).from(botProfiles);
   assertCreationOwnerStillCurrent();
   if (draftEntry && existingIds.some(p => p.id === id)) return readProfile(client, id);
-  if (templateId === 'cindy') {
+  if (isBotTemplatePresetId(templateId)) {
     const existingCindy = await findExistingCindy(client);
     assertCreationOwnerStillCurrent();
     if (existingCindy?.status === 'deleting') throwIpcError('PRECONDITION_FAILED', 'Cindy 正在删除，请稍后重试');
@@ -1966,7 +1966,7 @@ export async function createBotProfile(raw: unknown, restored?: RestoredBotOrigi
   });
   } catch (error) {
     assertCreationOwnerStillCurrent();
-    if (templateId === 'cindy' && (error as { code?: string }).code === 'ALREADY_EXISTS') {
+    if (isBotTemplatePresetId(templateId) && (error as { code?: string }).code === 'ALREADY_EXISTS') {
       const existing = await findExistingCindy(client);
       if (existing?.status === 'deleting') throwIpcError('PRECONDITION_FAILED', 'Cindy 正在删除，请稍后重试');
       if (existing) return existing;
@@ -2302,7 +2302,7 @@ export async function updateBotProfile(raw: unknown, expectedVersion?: number,
 
 async function findExistingCindy(client: ReturnType<typeof getDbClient>) {
   const rows = await client.drizzle.select({ id: botProfiles.id, config: botProfileVersions.capabilitiesJson, identity: botProfileVersions.identitySource }).from(botProfiles).innerJoin(botProfileVersions, and(eq(botProfileVersions.botId, botProfiles.id), eq(botProfileVersions.version, botProfiles.currentVersion))).where(ne(botProfiles.status, 'archived')).orderBy(botProfiles.createdAt);
-  const existing = rows.find(row => parseJson(row.config).templateId === 'cindy' || inferBotTemplatePresetId(row.identity) === 'cindy');
+  const existing = rows.find(row => isBotTemplatePresetId(parseJson(row.config).templateId) || inferBotTemplatePresetId(row.identity) !== null);
   return existing ? readProfile(client, existing.id) : null;
 }
 

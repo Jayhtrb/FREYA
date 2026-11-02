@@ -2,7 +2,7 @@ import { botGroupMentionAudience } from '@cindy/maker-shared/botGroupMentions';
 import { readBotGroupProcessCard, type BotGroupMention } from '@cindy/maker-shared/botGroupChat';
 import type { ChatMaskAction, ChatMaskState, ChatMaskMention, ChatGroupNotificationMode } from '@cindy/maker-shared/botGroupChat';
 import { teammateChatActivity, type TeammateActivity } from '@cindy/maker-shared/teammate-status';
-import { inferBotTemplatePresetId } from '@cindy/maker-shared/bot-template-preset';
+import { inferBotTemplatePresetId, isBotTemplatePresetId } from '@cindy/maker-shared/bot-template-preset';
 import { parseChatInvitationToken } from '@cindy/device-link';
 import { createConversationListState } from '@cindy/maker-shared/chatConversationList';
 import type { ChatHistory } from '@cindy/maker-shared/chat-history';
@@ -626,11 +626,11 @@ export function createChatServerClient(request: ChatRequest, personalList = crea
       for (const actor of actors) {
         if (!current()) break;
         if (actor.kind !== 'bot') continue;
-        if (actor.externalId === 'cindy-default') { ids.push(actor.externalId); continue; }
+        if (actor.externalId === 'cindy-default' || actor.externalId === 'freya-default') { ids.push(actor.externalId); continue; }
         try {
           const rows = await request<Array<{ key?: unknown; value?: unknown }>>('/preferences', 'GET', undefined, chatId(actor.id));
           const profile = rows?.find(row => row.key === 'companion.profile.v1')?.value as { templateId?: unknown; soul?: unknown } | undefined;
-          if (profile?.templateId === 'cindy' || (typeof profile?.soul === 'string' && inferBotTemplatePresetId(profile.soul) === 'cindy')) ids.push(actor.externalId);
+          if (isBotTemplatePresetId(profile?.templateId) || (typeof profile?.soul === 'string' && inferBotTemplatePresetId(profile.soul) !== null)) ids.push(actor.externalId);
         } catch { if (previous.includes(actor.externalId)) ids.push(actor.externalId); }
       }
       return ids;

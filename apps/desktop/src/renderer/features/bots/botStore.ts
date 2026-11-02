@@ -1,4 +1,5 @@
 import { isManagedBotAvatarUrl } from '../../../shared/botAvatarValue';
+import { isBotTemplatePresetId } from '../../../shared/botTemplatePreset';
 import { readCachedBotWelcomeContext } from './botWelcomeContext';
 import { getEffectiveLocale } from '@/lib/localePreference';
 import { isModelEnabled, getModelVisibilityVersion } from '@/state/modelVisibilityPrefs';
@@ -1141,7 +1142,7 @@ function duplicateBotName(sourceName: string): string {
 export async function duplicateBotProfile(id: string): Promise<BotProfile> {
   const source = profiles.find((bot) => bot.id === id);
   if (!source) throw new Error('Bot not found');
-  if (source.templateId === 'cindy') return source;
+  if (isBotTemplatePresetId(source.templateId)) return source;
   const owner = getDataOwnerGeneration();
   // Copy validated bytes through the existing image ingress, never trust a raw media URL.
   const avatarImage = isManagedBotAvatarUrl(source.avatar)
