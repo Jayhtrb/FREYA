@@ -9,7 +9,7 @@
  * (sources still active) is simply run again.
  */
 import { createHash } from 'node:crypto';
-import { inferBotTemplatePresetId } from '../../shared/botTemplatePreset.js';
+import { inferBotTemplatePresetId, isBotTemplatePresetId } from '../../shared/botTemplatePreset.js';
 import type { CompanionHistoryAttachment, CompanionMaterializeHost, CompanionWriteFence } from './materialize.js';
 import type { CompanionMediaUpload, CompanionMirrorAttachment } from './mirror.js';
 import { readAllRoomMessages, readRoomPage } from './room.js';
@@ -37,12 +37,12 @@ export interface CompanionMergeSummary {
 
 type PrefRow = { key: string; value: unknown; revision: number };
 
-/** Copies of Cindy: made from the Cindy preset, or the provisioned default Cindy. Never by name. */
+/** Copies of the default companion: made from the Cindy/FREYA preset, or the provisioned default. Never by name. */
 export function isCindyCompanion(externalId: string, profile: unknown): boolean {
-  if (externalId === 'cindy-default') return true;
+  if (externalId === 'cindy-default' || externalId === 'freya-default') return true;
   const value = profile && typeof profile === 'object' ? profile as { templateId?: unknown; soul?: unknown } : {};
-  if (value.templateId === 'cindy') return true;
-  return typeof value.soul === 'string' && inferBotTemplatePresetId(value.soul) === 'cindy';
+  if (isBotTemplatePresetId(value.templateId)) return true;
+  return typeof value.soul === 'string' && inferBotTemplatePresetId(value.soul) !== null;
 }
 
 const BATCH = 50;

@@ -12,7 +12,7 @@ export interface TaskTeammate {
 export type TaskCompanion = { id: string; role: string; channel?: string };
 
 export function taskTeammateKey(id: string, deviceId: string, cloudIds: ReadonlySet<string>, cindyIds: ReadonlySet<string> = new Set()): string {
-  if (id === 'cindy-default' || cindyIds.has(id)) return JSON.stringify(['teammate', 'cindy']);
+  if (id === 'cindy-default' || id === 'freya-default' || cindyIds.has(id)) return JSON.stringify(['teammate', 'cindy']);
   return cloudIds.has(id) ? JSON.stringify(['companion', id]) : JSON.stringify([deviceId, id]);
 }
 
@@ -23,7 +23,7 @@ export function taskTeammateOptions(rows: readonly HostedRemoteCollectionItem[],
     const id = row.item.ref.id;
     const key = taskTeammateKey(id, row.host.deviceId, cloudIds, cindyIds);
     if (!options.has(key)) options.set(key, { key, title: resolveRemoteText(row.item.display.title, locale),
-      ...(cloudIds.has(id) || cindyIds.has(id) || id === 'cindy-default' ? {} : { subtitle: row.host.deviceName }) });
+      ...(cloudIds.has(id) || cindyIds.has(id) || id === 'cindy-default' || id === 'freya-default' ? {} : { subtitle: row.host.deviceName }) });
   }
   return [...options.values()];
 }

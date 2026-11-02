@@ -5936,7 +5936,7 @@ function CCAgentSessionContent({
                  InteractionPromptHost: 普通模式下行为不变(直接 inline 渲染)。
                  当外部 (workdir-browse 等窄 rail 场景) 挂了 InteractionPromptSlot
                  时,卡片会被 portal 出去,这里就显占位。 */}
-              {!readOnly && botChatIdentity?.canonicalChat && botChatIdentity.id === 'cindy-default' && !isStreaming && !agentStatus.isRunning && !shareSelectionBlocked
+              {!readOnly && botChatIdentity?.canonicalChat && (botChatIdentity.id === 'cindy-default' || botChatIdentity.id === 'freya-default') && !isStreaming && !agentStatus.isRunning && !shareSelectionBlocked
                 && !pendingPlanReview && !pendingPermission && !pendingAskUser && !pendingPluginSetup
                 && !pendingIssueConfirm && !pendingRenameSessionsConfirm && !pendingGhostGrantConfirm
                 && !pendingRemoteDesktopConfirmation && !pendingInputHandoff && followUpInvitationSession === sessionId && (
