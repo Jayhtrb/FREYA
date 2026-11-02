@@ -4,7 +4,9 @@ export type BotTemplatePresetId = (typeof BOT_TEMPLATE_PRESET_IDS)[number];
 
 export const BOT_TEMPLATE_PRESET_AVATARS: Record<BotTemplatePresetId, string> = {
   cindy: 'cindy://avatar/preset/cindy',
-  freya: 'freya://avatar/preset/freya',
+  // FREYA has no bundled portrait yet; the reserved `cindy://avatar/…` sentinel
+  // validates and falls back to the name initial until artwork is added.
+  freya: 'cindy://avatar/preset/freya',
 };
 
 /**
